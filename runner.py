@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, make_response
 from randomizer.Enums.Settings import SettingsMap
 from randomizer.Fill import Generate_Spoiler
 from randomizer.Settings import Settings
@@ -40,4 +40,6 @@ def hello():
     settings = Settings(setting_data)
     spoiler = Spoiler(settings)
     Generate_Spoiler(spoiler)
-    return spoiler.json
+    response = make_response(json.dumps(spoiler.json), 200)
+    response.mimetype = "text/plain"
+    return response
