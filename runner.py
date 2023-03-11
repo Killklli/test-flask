@@ -1,8 +1,7 @@
-from flask import Flask, render_template
+from flask import Flask
 from randomizer.Enums.Settings import SettingsMap
 from randomizer.Fill import Generate_Spoiler
 from randomizer.Settings import Settings
-from randomizer.SettingStrings import decrypt_settings_string_enum
 from randomizer.Spoiler import Spoiler
 import json
 import random
