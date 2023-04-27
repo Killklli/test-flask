@@ -103,42 +103,42 @@ class LogicVarHolder:
         self.oranges = self.settings.training_barrels == TrainingBarrels.normal
         self.barrels = self.settings.training_barrels == TrainingBarrels.normal
 
-        self.progDonkey = 3 if self.settings.unlock_all_moves else 0
-        self.blast = self.settings.unlock_all_moves
-        self.strongKong = self.settings.unlock_all_moves
-        self.grab = self.settings.unlock_all_moves
+        self.progDonkey = 0
+        self.blast = False
+        self.strongKong = False
+        self.grab = False
 
-        self.progDiddy = 3 if self.settings.unlock_all_moves else 0
-        self.charge = self.settings.unlock_all_moves
-        self.jetpack = self.settings.unlock_all_moves
-        self.spring = self.settings.unlock_all_moves
+        self.progDiddy = 0
+        self.charge = False
+        self.jetpack = False
+        self.spring = False
 
-        self.progLanky = 3 if self.settings.unlock_all_moves else 0
-        self.handstand = self.settings.unlock_all_moves
-        self.balloon = self.settings.unlock_all_moves
-        self.sprint = self.settings.unlock_all_moves
+        self.progLanky = 0
+        self.handstand = False
+        self.balloon = False
+        self.sprint = False
 
-        self.progTiny = 3 if self.settings.unlock_all_moves else 0
-        self.mini = self.settings.unlock_all_moves
-        self.twirl = self.settings.unlock_all_moves
-        self.monkeyport = self.settings.unlock_all_moves
+        self.progTiny = 0
+        self.mini = False
+        self.twirl = False
+        self.monkeyport = False
 
-        self.progChunky = 3 if self.settings.unlock_all_moves else 0
-        self.hunkyChunky = self.settings.unlock_all_moves
-        self.punch = self.settings.unlock_all_moves
-        self.gorillaGone = self.settings.unlock_all_moves
+        self.progChunky = 0
+        self.hunkyChunky = False
+        self.punch = False
+        self.gorillaGone = False
 
-        self.coconut = self.settings.unlock_all_moves
-        self.peanut = self.settings.unlock_all_moves
-        self.grape = self.settings.unlock_all_moves
-        self.feather = self.settings.unlock_all_moves
-        self.pineapple = self.settings.unlock_all_moves
+        self.coconut = False
+        self.peanut = False
+        self.grape = False
+        self.feather = False
+        self.pineapple = False
 
-        self.bongos = self.settings.unlock_all_moves
-        self.guitar = self.settings.unlock_all_moves
-        self.trombone = self.settings.unlock_all_moves
-        self.saxophone = self.settings.unlock_all_moves
-        self.triangle = self.settings.unlock_all_moves
+        self.bongos = False
+        self.guitar = False
+        self.trombone = False
+        self.saxophone = False
+        self.triangle = False
 
         self.nintendoCoin = False
         self.rarewareCoin = False
@@ -146,8 +146,8 @@ class LogicVarHolder:
         self.camera = self.settings.shockwave_status == ShockwaveStatus.start_with
         self.shockwave = self.settings.shockwave_status == ShockwaveStatus.start_with
 
-        self.scope = self.settings.unlock_all_moves
-        self.homing = self.settings.unlock_all_moves
+        self.scope = False
+        self.homing = False
 
         self.JapesKey = False
         self.AztecKey = False
@@ -169,17 +169,17 @@ class LogicVarHolder:
         self.HelmChunky1 = False
         self.HelmChunky2 = False
 
-        self.Slam = 3 if self.settings.unlock_all_moves else STARTING_SLAM
-        self.AmmoBelts = 2 if self.settings.unlock_all_moves else 0
-        self.InstUpgrades = 3 if self.settings.unlock_all_moves else 0
+        self.Slam = STARTING_SLAM
+        self.AmmoBelts = 0
+        self.InstUpgrades = 0
 
         self.GoldenBananas = 0
         self.BananaFairies = 0
         self.BananaMedals = 0
         self.BattleCrowns = 0
 
-        self.superSlam = self.settings.unlock_all_moves
-        self.superDuperSlam = self.settings.unlock_all_moves
+        self.superSlam = False
+        self.superDuperSlam = False
 
         self.Blueprints = []
 
@@ -202,7 +202,23 @@ class LogicVarHolder:
         ]
         for keyEvent in keyEvents:
             if keyEvent not in self.settings.krool_keys_required:
-                self.Events.append(keyEvent)
+                # This is horrifyingly bad to go keys -> events -> keys but the patcher is expecting events in krool_keys_required and I'm not touching the math there to fix it
+                if keyEvent == Events.JapesKeyTurnedIn:
+                    self.JapesKey = True
+                elif keyEvent == Events.AztecKeyTurnedIn:
+                    self.AztecKey = True
+                elif keyEvent == Events.FactoryKeyTurnedIn:
+                    self.FactoryKey = True
+                elif keyEvent == Events.GalleonKeyTurnedIn:
+                    self.GalleonKey = True
+                elif keyEvent == Events.ForestKeyTurnedIn:
+                    self.ForestKey = True
+                elif keyEvent == Events.CavesKeyTurnedIn:
+                    self.CavesKey = True
+                elif keyEvent == Events.CastleKeyTurnedIn:
+                    self.CastleKey = True
+                elif keyEvent == Events.HelmKeyTurnedIn:
+                    self.HelmKey = True
 
         activated_warp_maps = []
         if self.settings.activate_all_bananaports == ActivateAllBananaports.all:
@@ -347,11 +363,11 @@ class LogicVarHolder:
         self.HelmChunky1 = self.HelmChunky1 or Items.HelmChunky1 in ownedItems
         self.HelmChunky2 = self.HelmChunky2 or Items.HelmChunky2 in ownedItems
 
-        self.Slam = 3 if self.settings.unlock_all_moves else sum(1 for x in ownedItems if x == Items.ProgressiveSlam) + STARTING_SLAM
+        self.Slam = sum(1 for x in ownedItems if x == Items.ProgressiveSlam) + STARTING_SLAM
         if Items.ProgressiveSlam in self.banned_items:  # If slam is banned, prevent logic from owning a better slam
             self.Slam = STARTING_SLAM
-        self.AmmoBelts = 2 if self.settings.unlock_all_moves else sum(1 for x in ownedItems if x == Items.ProgressiveAmmoBelt)
-        self.InstUpgrades = 3 if self.settings.unlock_all_moves else sum(1 for x in ownedItems if x == Items.ProgressiveInstrumentUpgrade)
+        self.AmmoBelts = sum(1 for x in ownedItems if x == Items.ProgressiveAmmoBelt)
+        self.InstUpgrades = sum(1 for x in ownedItems if x == Items.ProgressiveInstrumentUpgrade)
 
         self.GoldenBananas = sum(1 for x in ownedItems if x == Items.GoldenBanana)
         self.BananaFairies = sum(1 for x in ownedItems if x == Items.BananaFairy)
@@ -544,7 +560,7 @@ class LogicVarHolder:
         if self.settings.crown_door_item == HelmDoorItem.opened:
             return True
         elif self.settings.crown_door_item == HelmDoorItem.vanilla:
-            return self.BattleCrowns >= 4
+            return self.DoorItemCheck(HelmDoorItem.req_crown, self.settings.crown_door_item_count)
         return self.DoorItemCheck(self.settings.crown_door_item, self.settings.crown_door_item_count)
 
     def CoinDoorOpened(self):
@@ -552,7 +568,7 @@ class LogicVarHolder:
         if self.settings.coin_door_item == HelmDoorItem.opened:
             return True
         elif self.settings.coin_door_item == HelmDoorItem.vanilla:
-            return self.nintendoCoin and self.rarewareCoin
+            return self.DoorItemCheck(HelmDoorItem.req_companycoins, self.settings.coin_door_item_count)
         return self.DoorItemCheck(self.settings.coin_door_item, self.settings.coin_door_item_count)
 
     def CanFreeDiddy(self):
@@ -753,13 +769,25 @@ class LogicVarHolder:
         """Return true if the boss for a given level is beatable according to boss location rando and boss kong rando."""
         requiredKong = self.settings.boss_kongs[level]
         bossFight = self.settings.boss_maps[level]
+        # Ensure we have the required moves for the boss fight itself
         hasRequiredMoves = True
-        if bossFight == Maps.FactoryBoss and requiredKong == Kongs.tiny:
+        if bossFight == Maps.FactoryBoss and requiredKong == Kongs.tiny and not self.settings.hard_bosses:
             hasRequiredMoves = self.twirl
         elif bossFight == Maps.FungiBoss:
             hasRequiredMoves = self.hunkyChunky and self.barrels
         elif bossFight == Maps.JapesBoss or bossFight == Maps.AztecBoss or bossFight == Maps.CavesBoss:
             hasRequiredMoves = self.barrels
+        # In simple level order, there are a couple very specific cases we have to account for in order to prevent boss fill failures
+        level_order_matters = not self.settings.hard_level_progression and self.settings.shuffle_loading_zones in (ShuffleLoadingZones.none, ShuffleLoadingZones.levels)
+        if level_order_matters:
+            order_of_level = 7  # Guaranteed to be 1-7 here
+            for level_order in self.settings.level_order:
+                if self.settings.level_order[level_order] == level:
+                    order_of_level = level_order
+            if order_of_level == 4 and not self.barrels:  # Prevent Barrels on boss 3
+                return False
+            if order_of_level == 7 and not self.hunkyChunky or (not self.twirl and not self.settings.hard_bosses):  # Prevent Hunky on boss 7, and also Twirl on non-hard bosses
+                return False
         return self.IsKong(requiredKong) and hasRequiredMoves
 
     def HasFillRequirementsForLevel(self, level):
@@ -781,16 +809,31 @@ class LogicVarHolder:
             # You need to have vines or twirl before you can enter Aztec or any level beyond it
             if order_of_level >= order_of_aztec and not (self.vines or (self.istiny and self.twirl)):
                 return False
-            if order_of_level >= 3:
-                # Require barrels by level 3 to prevent boss barrel fill failures
-                if not self.barrels:
-                    return False
-                # Require swim by level 4 to prevent T&S being zero'd out
-                if order_of_level >= 4 and not self.swim:  # and not "the ability to dive without dive" whenever we get that squared away
+            if order_of_level >= 4:
+                # Require the following moves by level 4:
+                # - Swim so you can get into Lobby 4. This prevents logic from skipping this level for T&S requirements, preventing 0'd T&S.
+                # - Barrels so there will always be an eligible boss fill given the available moves at any level.
+                # - Vines for gameplay reasons. Needing vines for Helm is a frequent bottleneck and this eases the hunt for it.
+                if not self.swim or not self.barrels or not self.vines:
                     return False
                 # Require one of twirl or hunky chunky by level 7 to prevent non-hard-boss fill failures
                 if not self.settings.hard_bosses and order_of_level >= 7 and not (self.twirl or self.hunkyChunky):
                     return False
+                # Require both hunky chunky and twirl (or hard bosses) before Helm to prevent boss fill failures
+                if order_of_level > 7 and not self.hunkyChunky or (not self.twirl and not self.settings.hard_bosses):
+                    return False
+            # Make sure we have access to all prior required keys before entering the next level - this prevents keys from being placed in levels beyond what they unlock
+            if order_of_level > 1 and not self.JapesKey:
+                return False
+            elif order_of_level > 2 and not self.AztecKey:
+                return False
+            elif order_of_level > 4 and (not self.FactoryKey or not self.GalleonKey):
+                return False
+            elif order_of_level > 5 and not self.ForestKey:
+                return False
+            elif order_of_level > 7 and (not self.CavesKey or not self.CastleKey):
+                return False
+
         # If we have the moves, ensure we have enough kongs as well
         return self.HasEnoughKongs(level, forPreviousLevel=True)
 
@@ -813,10 +856,11 @@ class LogicVarHolder:
 
     def WinConditionMet(self):
         """Check if the current game state has met the win condition."""
-        if (
-            self.settings.win_condition == WinCondition.beat_krool or self.settings.win_condition == WinCondition.poke_snap
-        ):  # Photo taking doesn't have a clear wincon so this'll do until something better is concocted
+        if self.settings.win_condition == WinCondition.beat_krool:
             return Events.KRoolDefeated in self.Events
+        # Photo taking doesn't have a perfect wincon so this'll do until something better is concocted
+        if self.settings.win_condition == WinCondition.poke_snap:
+            return Events.KRoolDefeated in self.Events and self.camera
         elif self.settings.win_condition == WinCondition.get_key8:
             return self.HelmKey
         elif self.settings.win_condition == WinCondition.all_fairies:

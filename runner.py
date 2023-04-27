@@ -1,14 +1,33 @@
 from flask import Flask, make_response
+import argparse
+import codecs
+import json
+import pickle
+import random
+import time
+import os
+import sys
+import traceback
+
 from randomizer.Enums.Settings import SettingsMap
 from randomizer.Fill import Generate_Spoiler
 from randomizer.Settings import Settings
+from randomizer.SettingStrings import decrypt_settings_string_enum
 from randomizer.Spoiler import Spoiler
-import json
-import random
 app = Flask(__name__)
 
+
+
+def generate(generate_settings, file_name, gen_spoiler):
+    """Gen a seed and write the file to an output file."""
+    settings = Settings(generate_settings)
+    spoiler = Spoiler(settings)
+    Generate_Spoiler(spoiler)
+    return spoiler
+
 @app.route('/')
-def hello():
+def lambda_function():
+    """CLI Entrypoint for generating seeds."""
     presets = json.load(open("static/presets/preset_files.json"))
     default = json.load(open("static/presets/default.json"))
     found = False
@@ -23,6 +42,7 @@ def hello():
                 setting_data.pop("description")
                 found = True
     setting_data["seed"] = random.randint(0, 100000000)
+    # Convert string data to enums where possible.
     for k, v in setting_data.items():
         if k in SettingsMap:
             if type(v) is list:
@@ -37,9 +57,10 @@ def hello():
                 setting_data[k] = SettingsMap[k](v)
             else:
                 setting_data[k] = SettingsMap[k][v]
-    settings = Settings(setting_data)
-    spoiler = Spoiler(settings)
-    Generate_Spoiler(spoiler)
+    try:
+        spoiler = generate(setting_data, 'test', True)
+    except Exception as e:
+        print(traceback.format_exc())
     response = make_response(json.dumps(spoiler.json), 200)
     response.mimetype = "text/plain"
     return response

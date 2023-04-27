@@ -9,12 +9,13 @@ from randomizer.Enums.MoveTypes import MoveTypes
 from randomizer.Enums.Types import Types
 from randomizer.Lists.MapsAndExits import Maps
 from randomizer.Enums.VendorType import VendorType
+from typing import Any, Optional, Union
 
 
 class MapIDCombo:
     """A combination of a map and an associated item ID. If id == -1 and map == 0, has no model 2 item, ignore those."""
 
-    def __init__(self, map=None, id=None, flag=None, kong=Kongs.any):
+    def __init__(self, map: Optional[Union[int, Maps]]=None, id: Optional[int]=None, flag: Optional[int]=None, kong: Kongs=Kongs.any) -> None:
         """Initialize with given parameters."""
         self.map = map
         self.id = id
@@ -25,7 +26,7 @@ class MapIDCombo:
 class Location:
     """A shufflable location at which a random item can be placed."""
 
-    def __init__(self, level, name, default, location_type, kong=Kongs.any, data=None, logically_relevant=False):
+    def __init__(self, level: Levels, name: str, default: Items, location_type: Types, kong: Kongs=Kongs.any, data: Optional[Any]=None, logically_relevant: bool=False) -> None:
         """Initialize with given parameters."""
         if data is None:
             data = []
@@ -41,6 +42,7 @@ class Location:
         self.kong = kong
         self.logically_relevant = logically_relevant  # This is True if this location is needed to derive the logic for another location
         self.placement_index = None
+        self.inaccessible = False
         if self.type == Types.Shop:
             self.movetype = data[0]
             self.index = data[1]
@@ -78,7 +80,7 @@ class Location:
         if self.default_mapid_data is not None and len(self.default_mapid_data) > 0 and type(self.default_mapid_data[0]) is MapIDCombo and self.default_mapid_data[0].id == -1 and self.type != Types.Kong:
             self.is_reward = True
 
-    def PlaceItem(self, item):
+    def PlaceItem(self, item: Items) -> None:
         """Place item at this location."""
         self.item = item
         # If we're placing a real move here, lock out mutually exclusive shop locations
@@ -94,21 +96,21 @@ class Location:
                     LocationList[location].PlaceItem(Items.NoItem)
                     break  # There's only one shared spot to block
 
-    def PlaceConstantItem(self, item):
+    def PlaceConstantItem(self, item: Items) -> None:
         """Place item at this location, and set constant so it's ignored in the spoiler."""
         self.PlaceItem(item)
         self.constant = True
 
-    def SetDelayedItem(self, item):
+    def SetDelayedItem(self, item: Items) -> None:
         """Set an item to be added back later."""
         self.delayedItem = item
 
-    def PlaceDelayedItem(self):
+    def PlaceDelayedItem(self) -> None:
         """Place the delayed item at this location."""
         self.PlaceItem(self.delayedItem)
         self.delayedItem = None
 
-    def PlaceDefaultItem(self):
+    def PlaceDefaultItem(self) -> None:
         """Place whatever this location's default (vanilla) item is at it."""
         self.PlaceItem(self.default)
         self.constant = True
@@ -132,11 +134,49 @@ class Location:
 
 
 LocationList = {
-    # DK Isles locations
+    # Training Barrel locations
     Locations.IslesVinesTrainingBarrel: Location(Levels.DKIsles, "Isles Vines Training Barrel", Items.Vines, Types.TrainingBarrel, Kongs.any, [123]),
     Locations.IslesSwimTrainingBarrel: Location(Levels.DKIsles, "Isles Swim Training Barrel", Items.Swim, Types.TrainingBarrel, Kongs.any, [120]),
     Locations.IslesOrangesTrainingBarrel: Location(Levels.DKIsles, "Isles Oranges Training Barrel", Items.Oranges, Types.TrainingBarrel, Kongs.any, [121]),
     Locations.IslesBarrelsTrainingBarrel: Location(Levels.DKIsles, "Isles Barrels Training Barrel", Items.Barrels, Types.TrainingBarrel, Kongs.any, [122]),
+    # Pre-Given Moves
+    Locations.PreGiven_Location00: Location(Levels.DKIsles, "Pre-Given Move (00)", Items.NoItem, Types.PreGivenMove),
+    Locations.PreGiven_Location01: Location(Levels.DKIsles, "Pre-Given Move (01)", Items.NoItem, Types.PreGivenMove),
+    Locations.PreGiven_Location02: Location(Levels.DKIsles, "Pre-Given Move (02)", Items.NoItem, Types.PreGivenMove),
+    Locations.PreGiven_Location03: Location(Levels.DKIsles, "Pre-Given Move (03)", Items.NoItem, Types.PreGivenMove),
+    Locations.PreGiven_Location04: Location(Levels.DKIsles, "Pre-Given Move (04)", Items.NoItem, Types.PreGivenMove),
+    Locations.PreGiven_Location05: Location(Levels.DKIsles, "Pre-Given Move (05)", Items.NoItem, Types.PreGivenMove),
+    Locations.PreGiven_Location06: Location(Levels.DKIsles, "Pre-Given Move (06)", Items.NoItem, Types.PreGivenMove),
+    Locations.PreGiven_Location07: Location(Levels.DKIsles, "Pre-Given Move (07)", Items.NoItem, Types.PreGivenMove),
+    Locations.PreGiven_Location08: Location(Levels.DKIsles, "Pre-Given Move (08)", Items.NoItem, Types.PreGivenMove),
+    Locations.PreGiven_Location09: Location(Levels.DKIsles, "Pre-Given Move (09)", Items.NoItem, Types.PreGivenMove),
+    Locations.PreGiven_Location10: Location(Levels.DKIsles, "Pre-Given Move (10)", Items.NoItem, Types.PreGivenMove),
+    Locations.PreGiven_Location11: Location(Levels.DKIsles, "Pre-Given Move (11)", Items.NoItem, Types.PreGivenMove),
+    Locations.PreGiven_Location12: Location(Levels.DKIsles, "Pre-Given Move (12)", Items.NoItem, Types.PreGivenMove),
+    Locations.PreGiven_Location13: Location(Levels.DKIsles, "Pre-Given Move (13)", Items.NoItem, Types.PreGivenMove),
+    Locations.PreGiven_Location14: Location(Levels.DKIsles, "Pre-Given Move (14)", Items.NoItem, Types.PreGivenMove),
+    Locations.PreGiven_Location15: Location(Levels.DKIsles, "Pre-Given Move (15)", Items.NoItem, Types.PreGivenMove),
+    Locations.PreGiven_Location16: Location(Levels.DKIsles, "Pre-Given Move (16)", Items.NoItem, Types.PreGivenMove),
+    Locations.PreGiven_Location17: Location(Levels.DKIsles, "Pre-Given Move (17)", Items.NoItem, Types.PreGivenMove),
+    Locations.PreGiven_Location18: Location(Levels.DKIsles, "Pre-Given Move (18)", Items.NoItem, Types.PreGivenMove),
+    Locations.PreGiven_Location19: Location(Levels.DKIsles, "Pre-Given Move (19)", Items.NoItem, Types.PreGivenMove),
+    Locations.PreGiven_Location20: Location(Levels.DKIsles, "Pre-Given Move (20)", Items.NoItem, Types.PreGivenMove),
+    Locations.PreGiven_Location21: Location(Levels.DKIsles, "Pre-Given Move (21)", Items.NoItem, Types.PreGivenMove),
+    Locations.PreGiven_Location22: Location(Levels.DKIsles, "Pre-Given Move (22)", Items.NoItem, Types.PreGivenMove),
+    Locations.PreGiven_Location23: Location(Levels.DKIsles, "Pre-Given Move (23)", Items.NoItem, Types.PreGivenMove),
+    Locations.PreGiven_Location24: Location(Levels.DKIsles, "Pre-Given Move (24)", Items.NoItem, Types.PreGivenMove),
+    Locations.PreGiven_Location25: Location(Levels.DKIsles, "Pre-Given Move (25)", Items.NoItem, Types.PreGivenMove),
+    Locations.PreGiven_Location26: Location(Levels.DKIsles, "Pre-Given Move (26)", Items.NoItem, Types.PreGivenMove),
+    Locations.PreGiven_Location27: Location(Levels.DKIsles, "Pre-Given Move (27)", Items.NoItem, Types.PreGivenMove),
+    Locations.PreGiven_Location28: Location(Levels.DKIsles, "Pre-Given Move (28)", Items.NoItem, Types.PreGivenMove),
+    Locations.PreGiven_Location29: Location(Levels.DKIsles, "Pre-Given Move (29)", Items.NoItem, Types.PreGivenMove),
+    Locations.PreGiven_Location30: Location(Levels.DKIsles, "Pre-Given Move (30)", Items.NoItem, Types.PreGivenMove),
+    Locations.PreGiven_Location31: Location(Levels.DKIsles, "Pre-Given Move (31)", Items.NoItem, Types.PreGivenMove),
+    Locations.PreGiven_Location32: Location(Levels.DKIsles, "Pre-Given Move (32)", Items.NoItem, Types.PreGivenMove),
+    Locations.PreGiven_Location33: Location(Levels.DKIsles, "Pre-Given Move (33)", Items.NoItem, Types.PreGivenMove),
+    Locations.PreGiven_Location34: Location(Levels.DKIsles, "Pre-Given Move (34)", Items.NoItem, Types.PreGivenMove),
+    Locations.PreGiven_Location35: Location(Levels.DKIsles, "Pre-Given Move (35)", Items.NoItem, Types.PreGivenMove),
+    # DK Isles locations
     Locations.IslesDonkeyJapesRock: Location(Levels.DKIsles, "Isles Japes Lobby Entrance Item", Items.GoldenBanana, Types.Banana, Kongs.any, [MapIDCombo(Maps.Isles, 0x4, 381, Kongs.donkey)]),  # Can be assigned to other kongs
     Locations.IslesTinyCagedBanana: Location(Levels.DKIsles, "Isles Tiny Feather Cage", Items.GoldenBanana, Types.Banana, Kongs.tiny, [MapIDCombo(Maps.Isles, 0x2B, 420, Kongs.tiny)]),
     Locations.IslesTinyInstrumentPad: Location(Levels.DKIsles, "Isles Tiny Saxophone Pad", Items.GoldenBanana, Types.Banana, Kongs.tiny, [MapIDCombo(0, -1, 425, Kongs.tiny)]),
@@ -177,7 +217,7 @@ LocationList = {
     Locations.JapesLankyMedal: Location(Levels.JungleJapes, "Japes Lanky Medal", Items.BananaMedal, Types.Medal, Kongs.lanky),
     Locations.JapesTinyMedal: Location(Levels.JungleJapes, "Japes Tiny Medal", Items.BananaMedal, Types.Medal, Kongs.tiny),
     Locations.JapesChunkyMedal: Location(Levels.JungleJapes, "Japes Chunky Medal", Items.BananaMedal, Types.Medal, Kongs.chunky),
-    Locations.DiddyKong: Location(Levels.JungleJapes, "Diddy Kong", Items.Diddy, Types.Kong, Kongs.any, [MapIDCombo(0, -1, 6)], logically_relevant=True),
+    Locations.DiddyKong: Location(Levels.JungleJapes, "Diddy Kong's Cage", Items.Diddy, Types.Kong, Kongs.any, [MapIDCombo(0, -1, 6)], logically_relevant=True),
     Locations.JapesDonkeyFrontofCage: Location(Levels.JungleJapes, "Japes in Front of Diddy Cage", Items.GoldenBanana, Types.Banana, Kongs.any, [MapIDCombo(Maps.JungleJapes, 0x69, 4, Kongs.donkey)], logically_relevant=True),  # Can be assigned to other kongs
     Locations.JapesDonkeyFreeDiddy: Location(Levels.JungleJapes, "Japes Free Diddy Item", Items.GoldenBanana, Types.Banana, Kongs.any, [MapIDCombo(Maps.JungleJapes, 0x48, 5, Kongs.donkey)]),  # Can be assigned to other kongs
     Locations.JapesDonkeyCagedBanana: Location(Levels.JungleJapes, "Japes Donkey Floor Cage Banana", Items.GoldenBanana, Types.Banana, Kongs.donkey, [MapIDCombo(Maps.JungleJapes, 0x44, 20, Kongs.donkey)]),
@@ -219,7 +259,7 @@ LocationList = {
     Locations.AztecKasplatOnTinyTemple: Location(Levels.AngryAztec, "Aztec Kasplat On Tiny Temple", Items.AngryAztecDiddyBlueprint, Types.Blueprint, Kongs.diddy, [Maps.AngryAztec]),
     Locations.AztecTinyKlaptrapRoom: Location(Levels.AngryAztec, "Aztec Tiny Klaptrap Room", Items.GoldenBanana, Types.Banana, Kongs.tiny, [MapIDCombo(Maps.AztecTinyTemple, 0x7E, 65, Kongs.tiny)]),
     Locations.AztecChunkyKlaptrapRoom: Location(Levels.AngryAztec, "Aztec Chunky Klaptrap Room", Items.GoldenBanana, Types.Banana, Kongs.chunky, [MapIDCombo(Maps.AztecTinyTemple, 0x9, 64, Kongs.chunky)]),
-    Locations.TinyKong: Location(Levels.AngryAztec, "Tiny Kong", Items.Tiny, Types.Kong, Kongs.any, [MapIDCombo(0, -1, 66)], logically_relevant=True),
+    Locations.TinyKong: Location(Levels.AngryAztec, "Tiny Kong's Cage", Items.Tiny, Types.Kong, Kongs.any, [MapIDCombo(0, -1, 66)], logically_relevant=True),
     Locations.AztecDiddyFreeTiny: Location(Levels.AngryAztec, "Aztec Free Tiny Item", Items.GoldenBanana, Types.Banana, Kongs.any, [MapIDCombo(Maps.AztecTinyTemple, 0x5B, 67, Kongs.diddy)]),  # Can be assigned to other kongs
     Locations.AztecLankyVulture: Location(Levels.AngryAztec, "Aztec Lanky Vulture Shooting", Items.GoldenBanana, Types.Banana, Kongs.lanky, [MapIDCombo(0, -1, 68, Kongs.lanky)]),
     Locations.AztecBattleArena: Location(Levels.AngryAztec, "Aztec Battle Arena", Items.BattleCrown, Types.Crown, Kongs.any, [MapIDCombo(Maps.AztecCrown, -1, 610)]),
@@ -236,7 +276,7 @@ LocationList = {
     Locations.AztecChunky5DoorTemple: Location(Levels.AngryAztec, "Aztec Chunky 5 Door Temple", Items.GoldenBanana, Types.Banana, Kongs.chunky, [MapIDCombo(0, -1, 59, Kongs.chunky)]),
     Locations.AztecKasplatChunky5DT: Location(Levels.AngryAztec, "Aztec Kasplat Inside Chunky's 5-Door Temple", Items.AngryAztecChunkyBlueprint, Types.Blueprint, Kongs.chunky, [Maps.AztecChunky5DTemple]),
     Locations.AztecTinyBeetleRace: Location(Levels.AngryAztec, "Aztec Tiny Beetle Race", Items.GoldenBanana, Types.ToughBanana, Kongs.tiny, [MapIDCombo(Maps.AztecTinyRace, 0x48, 75, Kongs.tiny)]),
-    Locations.LankyKong: Location(Levels.AngryAztec, "Lanky Kong", Items.Lanky, Types.Kong, Kongs.any, [MapIDCombo(0, -1, 70)], logically_relevant=True),
+    Locations.LankyKong: Location(Levels.AngryAztec, "Lanky Kong's Cage", Items.Lanky, Types.Kong, Kongs.any, [MapIDCombo(0, -1, 70)], logically_relevant=True),
     Locations.AztecDonkeyFreeLanky: Location(Levels.AngryAztec, "Aztec Free Lanky Item", Items.GoldenBanana, Types.Banana, Kongs.any, [MapIDCombo(Maps.AztecLlamaTemple, 0x6C, 77, Kongs.donkey)]),  # Can be assigned to other kongs
     Locations.AztecLankyLlamaTempleBarrel: Location(Levels.AngryAztec, "Aztec Lanky Llama Temple Barrel", Items.GoldenBanana, Types.Banana, Kongs.lanky, [MapIDCombo(0, -1, 73, Kongs.lanky)]),
     Locations.AztecLankyMatchingGame: Location(Levels.AngryAztec, "Aztec Lanky Matching Game", Items.GoldenBanana, Types.Banana, Kongs.lanky, [MapIDCombo(Maps.AztecLlamaTemple, 0x2B, 72, Kongs.lanky)]),
@@ -265,7 +305,7 @@ LocationList = {
     Locations.FactoryTinyCarRace: Location(Levels.FranticFactory, "Factory Tiny Car Race", Items.GoldenBanana, Types.Banana, Kongs.tiny, [MapIDCombo(Maps.FactoryTinyRace, 0x62, 139, Kongs.tiny)]),
     Locations.FactoryDiddyChunkyRoomBarrel: Location(Levels.FranticFactory, "Factory Diddy Storage Room Barrel", Items.GoldenBanana, Types.Banana, Kongs.diddy, [MapIDCombo(0, -1, 134, Kongs.diddy)]),
     Locations.FactoryDonkeyPowerHut: Location(Levels.FranticFactory, "Factory Donkey Power Hut", Items.GoldenBanana, Types.Banana, Kongs.donkey, [MapIDCombo(Maps.FactoryPowerHut, 0x2, 112, Kongs.donkey)]),
-    Locations.ChunkyKong: Location(Levels.FranticFactory, "Chunky Kong", Items.Chunky, Types.Kong, Kongs.any, [MapIDCombo(0, -1, 117)], logically_relevant=True),
+    Locations.ChunkyKong: Location(Levels.FranticFactory, "Chunky Kong's Cage", Items.Chunky, Types.Kong, Kongs.any, [MapIDCombo(0, -1, 117)], logically_relevant=True),
     Locations.NintendoCoin: Location(Levels.FranticFactory, "DK Arcade Round 2", Items.NintendoCoin, Types.Coin, Kongs.donkey, [MapIDCombo(Maps.FranticFactory, 0x13E, 132)]),
     Locations.FactoryDonkeyDKArcade: Location(Levels.FranticFactory, "Factory Donkey DK Arcade Round 1", Items.GoldenBanana, Types.ToughBanana, Kongs.donkey, [MapIDCombo(Maps.FranticFactory, 0x108, 130, Kongs.donkey), MapIDCombo(Maps.FactoryBaboonBlast, 0, 130, Kongs.donkey)]),
     Locations.FactoryLankyFreeChunky: Location(Levels.FranticFactory, "Factory Free Chunky Item", Items.GoldenBanana, Types.Banana, Kongs.any, [MapIDCombo(Maps.FranticFactory, 0x78, 118, Kongs.lanky)]),  # Can be assigned to other kongs
@@ -664,7 +704,7 @@ LocationList = {
     Locations.RainbowCoin_Location01: Location(Levels.AngryAztec, "Aztec Dirt Patch (Chunky Temple)", Items.RainbowCoin, Types.RainbowCoin, Kongs.any, [MapIDCombo(Maps.AztecChunky5DTemple, -1, 0x29F)]),  # Chunky 5DT
     Locations.RainbowCoin_Location02: Location(Levels.FranticFactory, "Factory Dirt Patch (Dark Room)", Items.RainbowCoin, Types.RainbowCoin, Kongs.any, [MapIDCombo(Maps.FranticFactory, -1, 0x2A0)]),  # Dark Room
     Locations.RainbowCoin_Location03: Location(Levels.DKIsles, "Isles Dirt Patch (Fungi Island)", Items.RainbowCoin, Types.RainbowCoin, Kongs.any, [MapIDCombo(Maps.Isles, -1, 0x2A1)]),  # Fungi Entrance
-    Locations.RainbowCoin_Location04: Location(Levels.DKIsles, "Isles Dirt Patch (Waterfall)", Items.RainbowCoin, Types.RainbowCoin, Kongs.any, [MapIDCombo(Maps.Isles, -1, 0x2A2)]),  # Caves Slope
+    Locations.RainbowCoin_Location04: Location(Levels.DKIsles, "Isles Dirt Patch (Under Caves Lobby)", Items.RainbowCoin, Types.RainbowCoin, Kongs.any, [MapIDCombo(Maps.Isles, -1, 0x2A2)]),  # Caves Slope
     Locations.RainbowCoin_Location05: Location(Levels.DKIsles, "Isles Dirt Patch (Aztec Roof)", Items.RainbowCoin, Types.RainbowCoin, Kongs.any, [MapIDCombo(Maps.Isles, -1, 0x2A3)]),  # Aztec Roof
     Locations.RainbowCoin_Location06: Location(Levels.AngryAztec, "Aztec Dirt Patch (Oasis)", Items.RainbowCoin, Types.RainbowCoin, Kongs.any, [MapIDCombo(Maps.AngryAztec, -1, 0x2A4)]),  # Oasis
     Locations.RainbowCoin_Location07: Location(Levels.FungiForest, "Forest Dirt Patch (Grass)", Items.RainbowCoin, Types.RainbowCoin, Kongs.any, [MapIDCombo(Maps.FungiForest, -1, 0x2A5)]),  # Isotarge Coin
@@ -843,6 +883,44 @@ SharedShopLocations = {
     Locations.SharedGalleonPotion,
     Locations.SharedGalleonGun,
     Locations.SharedCavesPotion,
+}
+PreGivenLocations = {
+    Locations.PreGiven_Location00,
+    Locations.PreGiven_Location01,
+    Locations.PreGiven_Location02,
+    Locations.PreGiven_Location03,
+    Locations.PreGiven_Location04,
+    Locations.PreGiven_Location05,
+    Locations.PreGiven_Location06,
+    Locations.PreGiven_Location07,
+    Locations.PreGiven_Location08,
+    Locations.PreGiven_Location09,
+    Locations.PreGiven_Location10,
+    Locations.PreGiven_Location11,
+    Locations.PreGiven_Location12,
+    Locations.PreGiven_Location13,
+    Locations.PreGiven_Location14,
+    Locations.PreGiven_Location15,
+    Locations.PreGiven_Location16,
+    Locations.PreGiven_Location17,
+    Locations.PreGiven_Location18,
+    Locations.PreGiven_Location19,
+    Locations.PreGiven_Location20,
+    Locations.PreGiven_Location21,
+    Locations.PreGiven_Location22,
+    Locations.PreGiven_Location23,
+    Locations.PreGiven_Location24,
+    Locations.PreGiven_Location25,
+    Locations.PreGiven_Location26,
+    Locations.PreGiven_Location27,
+    Locations.PreGiven_Location28,
+    Locations.PreGiven_Location29,
+    Locations.PreGiven_Location30,
+    Locations.PreGiven_Location31,
+    Locations.PreGiven_Location32,
+    Locations.PreGiven_Location33,
+    Locations.PreGiven_Location34,
+    Locations.PreGiven_Location35,
 }
 
 # Dictionary to speed up lookups of related shop locations

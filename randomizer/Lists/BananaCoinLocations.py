@@ -14,7 +14,7 @@ CAVES_WATER_HEIGHT = 30
 class BananaCoinGroup:
     """Stores data for each group of coins."""
 
-    def __init__(self, *, group=0, name="No Location", map_id=0, konglist=[], region=None, logic=None, vanilla=False, locations=[]):
+    def __init__(self, *, group=0, name="No Location", map_id=0, konglist=[], region=None, logic=None, vanilla=False, locations=[]) -> None:
         """Initialize with given parameters."""
         self.group = group
         self.name = name
@@ -5451,7 +5451,7 @@ BananaCoinGroupList = {
             name="On various rafters",
             konglist=[Kongs.diddy],
             region=Regions.MillRafters,
-            logic=lambda l: True,
+            logic=lambda l: l.guitar and l.isdiddy,
             locations=[
                 [1.0, 247, 0, 561],
                 [1.0, 246, -25, 481],

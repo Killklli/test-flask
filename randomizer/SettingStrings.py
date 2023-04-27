@@ -6,7 +6,8 @@ from itertools import groupby
 
 import js
 
-from randomizer.Enums.Settings import SettingsStringDataType, SettingsStringEnum, SettingsStringListTypeMap, SettingsStringTypeMap
+from randomizer.Enums.Settings import BananaportRando, LogicType, SettingsStringDataType, SettingsStringEnum, SettingsStringIntRangeMap, SettingsStringListTypeMap, SettingsStringTypeMap
+from typing import Any, Dict, Tuple
 
 letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 index_to_letter = {i: letters[i] for i in range(64)}
@@ -30,6 +31,89 @@ def bin_string_to_int(bin_str, bytesize):
         return int(bin_str, 2) - (1 << bytesize)
     else:
         return int(bin_str, 2)
+
+
+def get_var_int_encode_details(settingEnum: SettingsStringEnum) -> Tuple[int, bool]:
+    """Return key information needed to encode/decode a given var_int setting.
+
+    Returns:
+        int - The bit length of the int.
+        bool - True if negative numbers are possible.
+    """
+    range = SettingsStringIntRangeMap[settingEnum]
+    max_val = range["max"]
+    min_val = range["min"]
+    limiting_val = max_val
+    negatives_possible = min_val < 0
+    if negatives_possible and abs(min_val) > max_val:
+        # We subtract one, to handle the edge case where the absolute value is
+        # a negative power of 2.
+        limiting_val = abs(min_val) - 1
+    # Get the bit length of the limiting value.
+    bit_len = limiting_val.bit_length()
+    # If negatives are possible, add one to the bit length.
+    if negatives_possible:
+        bit_len += 1
+    return bit_len, negatives_possible
+
+
+def encode_var_int(settingEnum, num):
+    """Convert a variable-size integer to a binary representation."""
+    bit_len, _ = get_var_int_encode_details(settingEnum)
+    return int_to_bin_string(num, bit_len)
+
+
+def decode_var_int(settingEnum: SettingsStringEnum, bin_str: str) -> int:
+    """Convert a binary string to a variable-size integer."""
+    bit_len, negatives_possible = get_var_int_encode_details(settingEnum)
+    if negatives_possible:
+        return bin_string_to_int(bin_str, bit_len)
+    else:
+        return int(bin_str, 2)
+
+
+# A map tying certain key settings to other settings that should be excluded
+# from the string, if the key setting has a certain value.
+settingsExclusionMap = {
+    "helm_hurry": {
+        False: [
+            "helmhurry_list_banana_medal",
+            "helmhurry_list_battle_crown",
+            "helmhurry_list_bean",
+            "helmhurry_list_blueprint",
+            "helmhurry_list_boss_key",
+            "helmhurry_list_colored_bananas",
+            "helmhurry_list_company_coins",
+            "helmhurry_list_fairies",
+            "helmhurry_list_golden_banana",
+            "helmhurry_list_ice_traps",
+            "helmhurry_list_kongs",
+            "helmhurry_list_move",
+            "helmhurry_list_pearl",
+            "helmhurry_list_rainbow_coin",
+            "helmhurry_list_starting_time",
+        ]
+    },
+    "shuffle_items": {False: ["item_rando_list_selected"]},
+    "enemy_rando": {False: ["enemies_selected"]},
+    "bonus_barrel_rando": {False: ["minigames_list_selected"]},
+    "bananaport_rando": {BananaportRando.off: ["warp_level_list_selected"]},
+    "logic_type": {LogicType.glitchless: ["glitches_selected"], LogicType.nologic: ["glitches_selected"]},
+    "select_keys": {False: ["starting_keys_list_selected"], True: ["krool_key_count"]},
+    "quality_of_life": {False: ["misc_changes_selected"]},
+}
+
+
+def prune_settings(settings_dict: dict):
+    """Remove certain settings based on the values of other settings."""
+    settings_to_remove = []
+    for keySetting, exclusions in settingsExclusionMap.items():
+        if settings_dict[keySetting] in exclusions:
+            settings_to_remove.extend(exclusions[settings_dict[keySetting]])
+    for pop in settings_to_remove:
+        if pop in settings_dict:
+            settings_dict.pop(pop)
+    return settings_dict
 
 
 def encrypt_settings_string_enum(dict_data: dict):
@@ -63,20 +147,22 @@ def encrypt_settings_string_enum(dict_data: dict):
         "rambi_custom_color",
         "random_colors",
         "random_music",
-        "music_bgm",
-        "music_events",
-        "music_fanfares",
+        "music_bgm_randomized",
+        "music_events_randomized",
+        "music_fanfares_randomized",
         "tiny_colors",
         "tiny_custom_color",
         "override_cosmetics",
         "remove_water_oscillation",
+        "head_balloons",
         "colorblind_mode",
         "search",
-        "holiday_mode",
+        "holiday_setting",
         "homebrew_header",
     ]:
         if pop in dict_data:
             dict_data.pop(pop)
+    dict_data = prune_settings(dict_data)
     bitstring = ""
     for key in dict_data:
         value = dict_data[key]
@@ -96,6 +182,8 @@ def encrypt_settings_string_enum(dict_data: dict):
             bitstring += int_to_bin_string(value, 8)
         elif key_data_type == SettingsStringDataType.int16:
             bitstring += int_to_bin_string(value, 16)
+        elif key_data_type == SettingsStringDataType.var_int:
+            bitstring += encode_var_int(key_enum, value)
         elif key_data_type == SettingsStringDataType.list:
             bitstring += f"{len(value):08b}"
             key_list_data_type = SettingsStringListTypeMap[key_enum]
@@ -110,6 +198,8 @@ def encrypt_settings_string_enum(dict_data: dict):
                     bitstring += int_to_bin_string(item, 8)
                 elif key_list_data_type == SettingsStringDataType.int16:
                     bitstring += int_to_bin_string(item, 16)
+                elif key_list_data_type == SettingsStringDataType.var_int:
+                    bitstring += encode_var_int(key_enum, item)
                 else:
                     # The value is an enum.
                     max_value = max([member.value for member in key_list_data_type])
@@ -134,7 +224,7 @@ def encrypt_settings_string_enum(dict_data: dict):
     return letter_string
 
 
-def decrypt_settings_string_enum(encrypted_string: str):
+def decrypt_settings_string_enum(encrypted_string: str) -> Dict[str, Any]:
     """Take an enum-based encrypted string and return a dictionary.
 
     Args:
@@ -177,6 +267,10 @@ def decrypt_settings_string_enum(encrypted_string: str):
         elif key_data_type == SettingsStringDataType.int16:
             val = bin_string_to_int(bitstring[bit_index : bit_index + 16], 16)
             bit_index += 16
+        elif key_data_type == SettingsStringDataType.var_int:
+            bit_len, _ = get_var_int_encode_details(key_enum)
+            val = decode_var_int(key_enum, bitstring[bit_index : bit_index + bit_len])
+            bit_index += bit_len
         elif key_data_type == SettingsStringDataType.list:
             list_length = int(bitstring[bit_index : bit_index + 8], 2)
             bit_index += 8
@@ -196,6 +290,10 @@ def decrypt_settings_string_enum(encrypted_string: str):
                 elif key_list_data_type == SettingsStringDataType.int16:
                     list_val = bin_string_to_int(bitstring[bit_index : bit_index + 16], 16)
                     bit_index += 16
+                elif key_data_type == SettingsStringDataType.var_int:
+                    bit_len, _ = get_var_int_encode_details(key_enum)
+                    list_val = decode_var_int(key_enum, bitstring[bit_index : bit_index + bit_len])
+                    bit_index += bit_len
                 else:
                     # The value is an enum.
                     max_value = max([member.value for member in key_list_data_type])

@@ -32,6 +32,16 @@ class PkmnSnapEnemy:
         self.spawned = self.default
 
 
+class Spawner:
+    """Class which stores information pertaining to a spawner."""
+
+    def __init__(self, enemy_id: int, offset: int, index: int):
+        """Initialize with given parameters."""
+        self.enemy_id = enemy_id
+        self.offset = offset
+        self.index = index
+
+
 pkmn_snap_enemies = [
     PkmnSnapEnemy(Enemies.Kaboom),
     PkmnSnapEnemy(Enemies.BeaverBlue),
@@ -69,6 +79,164 @@ pkmn_snap_enemies = [
     PkmnSnapEnemy(Enemies.Pufftup),
     PkmnSnapEnemy(Enemies.Kosha),
 ]
+
+valid_maps = [
+    Maps.JapesMountain,
+    Maps.JungleJapes,
+    Maps.JapesTinyHive,
+    Maps.JapesLankyCave,
+    Maps.AztecTinyTemple,
+    Maps.HideoutHelm,
+    Maps.AztecDonkey5DTemple,
+    Maps.AztecDiddy5DTemple,
+    Maps.AztecLanky5DTemple,
+    Maps.AztecTiny5DTemple,
+    Maps.AztecChunky5DTemple,
+    Maps.AztecLlamaTemple,
+    Maps.FranticFactory,
+    Maps.FactoryPowerHut,
+    Maps.GloomyGalleon,
+    Maps.GalleonSickBay,
+    Maps.JapesUnderGround,
+    Maps.Isles,
+    Maps.FactoryCrusher,
+    Maps.AngryAztec,
+    Maps.GalleonSealRace,
+    Maps.JapesBaboonBlast,
+    Maps.AztecBaboonBlast,
+    Maps.Galleon2DShip,
+    Maps.Galleon5DShipDiddyLankyChunky,
+    Maps.Galleon5DShipDKTiny,
+    Maps.GalleonTreasureChest,
+    Maps.GalleonMermaidRoom,
+    Maps.FungiForest,
+    Maps.GalleonLighthouse,
+    Maps.GalleonMechafish,
+    Maps.ForestAnthill,
+    Maps.GalleonBaboonBlast,
+    Maps.ForestMinecarts,
+    Maps.ForestMillAttic,
+    Maps.ForestRafters,
+    Maps.ForestMillAttic,
+    Maps.ForestThornvineBarn,
+    # Maps.ForestSpider, # Causes a lot of enemies to fall into the pit of their own volition
+    Maps.ForestMillFront,
+    Maps.ForestMillBack,
+    Maps.ForestLankyMushroomsRoom,
+    Maps.CrystalCaves,
+    Maps.CavesDonkeyIgloo,
+    Maps.CavesDiddyIgloo,
+    Maps.CavesLankyIgloo,
+    Maps.CavesTinyIgloo,
+    # Maps.CavesChunkyIgloo, # Fireball with glasses is here
+    Maps.CavesDonkeyCabin,
+    Maps.CavesDiddyLowerCabin,
+    Maps.CavesDiddyUpperCabin,
+    Maps.CavesLankyCabin,
+    Maps.CavesTinyCabin,
+    Maps.CavesChunkyCabin,
+    Maps.CreepyCastle,
+    Maps.CastleBallroom,
+    Maps.CavesRotatingCabin,
+    Maps.CavesFrozenCastle,
+    Maps.CastleCrypt,
+    Maps.CastleMausoleum,
+    Maps.CastleUpperCave,
+    Maps.CastleLowerCave,
+    Maps.CastleTower,
+    Maps.CastleMinecarts,
+    Maps.FactoryBaboonBlast,
+    Maps.CastleMuseum,
+    Maps.CastleLibrary,
+    Maps.CastleDungeon,
+    Maps.CastleTree,
+    Maps.CastleShed,
+    Maps.CastleTrashCan,
+    Maps.JungleJapesLobby,
+    Maps.AngryAztecLobby,
+    Maps.FranticFactoryLobby,
+    Maps.GloomyGalleonLobby,
+    Maps.FungiForestLobby,
+    Maps.CrystalCavesLobby,
+    Maps.CreepyCastleLobby,
+    Maps.HideoutHelmLobby,
+    Maps.GalleonSubmarine,
+    Maps.CavesBaboonBlast,
+    Maps.CastleBaboonBlast,
+    Maps.ForestBaboonBlast,
+    Maps.IslesSnideRoom,
+    Maps.ForestGiantMushroom,
+    Maps.ForestLankyZingersRoom,
+    Maps.CastleBoss,
+]
+crown_maps = [Maps.JapesCrown, Maps.AztecCrown, Maps.FactoryCrown, Maps.GalleonCrown, Maps.ForestCrown, Maps.CavesCrown, Maps.CastleCrown, Maps.HelmCrown, Maps.SnidesCrown, Maps.LobbyCrown]
+minigame_maps_easy = [
+    Maps.BusyBarrelBarrageEasy,
+    Maps.BusyBarrelBarrageHard,
+    Maps.BusyBarrelBarrageNormal,
+    # Maps.HelmBarrelDiddyKremling, # Only kremlings activate the switch
+    Maps.HelmBarrelChunkyHidden,
+    Maps.HelmBarrelChunkyShooting,
+]
+minigame_maps_beatable = [Maps.MadMazeMaulEasy, Maps.MadMazeMaulNormal, Maps.MadMazeMaulHard, Maps.MadMazeMaulInsane]
+minigame_maps_nolimit = [Maps.HelmBarrelLankyMaze, Maps.StashSnatchEasy, Maps.StashSnatchNormal, Maps.StashSnatchHard, Maps.StashSnatchInsane]
+minigame_maps_beavers = [Maps.BeaverBotherEasy, Maps.BeaverBotherNormal, Maps.BeaverBotherHard]
+minigame_maps_total = minigame_maps_easy.copy()
+minigame_maps_total.extend(minigame_maps_beatable)
+minigame_maps_total.extend(minigame_maps_nolimit)
+minigame_maps_total.extend(minigame_maps_beavers)
+bbbarrage_maps = (Maps.BusyBarrelBarrageEasy, Maps.BusyBarrelBarrageNormal, Maps.BusyBarrelBarrageHard)
+banned_speed_maps = list(bbbarrage_maps).copy() + minigame_maps_beavers.copy()
+replacement_priority = {
+    EnemySubtype.GroundSimple: [EnemySubtype.GroundBeefy, EnemySubtype.Water, EnemySubtype.Air],
+    EnemySubtype.GroundBeefy: [EnemySubtype.GroundSimple, EnemySubtype.Water, EnemySubtype.Air],
+    EnemySubtype.Water: [EnemySubtype.Air, EnemySubtype.GroundSimple, EnemySubtype.GroundBeefy],
+    EnemySubtype.Air: [EnemySubtype.GroundSimple, EnemySubtype.GroundBeefy, EnemySubtype.Water],
+}
+banned_enemy_maps = {
+    Enemies.Book: [Maps.CavesDonkeyCabin, Maps.JapesLankyCave, Maps.AngryAztecLobby],
+    Enemies.Kosha: [Maps.CavesDiddyLowerCabin, Maps.CavesTinyCabin],
+    Enemies.Guard: [Maps.CavesDiddyLowerCabin, Maps.CavesTinyIgloo, Maps.CavesTinyCabin],
+}
+
+
+def isBanned(new_enemy_id: Enemies, cont_map_id: Maps, spawner: Spawner, no_ground_simple_selected: bool) -> bool:
+    """Define if enemy is banned in current circumstances."""
+    if new_enemy_id in banned_enemy_maps:
+        if cont_map_id in banned_enemy_maps[new_enemy_id]:
+            return True
+    if no_ground_simple_selected:
+        if cont_map_id == Maps.AztecTinyTemple and spawner.index in list(range(20, 24)):
+            return True
+        if cont_map_id == Maps.CastleBallroom and spawner.index <= 5:
+            return True
+        if cont_map_id == Maps.CastleLibrary and spawner.index <= 4:
+            return True
+    if cont_map_id == Maps.ForestSpider and EnemyMetaData[new_enemy_id].aggro == 4:
+        return True
+    if cont_map_id == Maps.ForestGiantMushroom and spawner.index in (3, 4):
+        return True
+    if new_enemy_id == Enemies.Guard and cont_map_id == Maps.FranticFactory:
+        if spawner.index in (59, 62, 63, 73, 87, 88):  # Various enemies that are in tight hallways that are difficult to navigate around
+            return True
+    gun_enemy_gauntlets = (
+        Maps.ForestMillAttic,
+        Maps.CavesDonkeyCabin,
+        Maps.JapesLankyCave,
+        Maps.CastleShed,
+    )
+    enemies_cant_kill_gun = (
+        Enemies.Klump,
+        Enemies.RoboKremling,
+        Enemies.Kosha,
+        Enemies.Klobber,
+        Enemies.Kaboom,
+        Enemies.KlaptrapPurple,
+        Enemies.Guard,
+    )
+    if (cont_map_id in gun_enemy_gauntlets or (cont_map_id == Maps.AztecTinyTemple and spawner.index < 17)) and new_enemy_id in enemies_cant_kill_gun:
+        return True
+    return False
 
 
 def resetPkmnSnap():
@@ -136,14 +304,14 @@ def getBalancedCrownEnemyRando(spoiler: Spoiler, crown_setting, damage_ohko_sett
         # Make sure every list is populated, even if too few crown-enabled enemies have been selected
         # This breaks the crown balancing, but what the player wants, the player gets
         if len(disruptive_max_1) == 0:
-            disruptive_max_1.append(every_enemy.copy())
+            disruptive_max_1.extend(every_enemy.copy())
             for enemy in EnemyMetaData:
                 if EnemyMetaData[enemy].disruptive > 1:
                     EnemyMetaData[enemy].disruptive = 1
         if len(disruptive_at_most_kasplat) == 0:
-            disruptive_at_most_kasplat.append(disruptive_max_1.copy())
+            disruptive_at_most_kasplat.extend(disruptive_max_1.copy())
         if len(disruptive_0) == 0:
-            disruptive_0.append(disruptive_at_most_kasplat)
+            disruptive_0.extend(disruptive_at_most_kasplat)
             for enemy in EnemyMetaData:
                 if EnemyMetaData[enemy].disruptive > 0:
                     EnemyMetaData[enemy].disruptive = 0
@@ -231,129 +399,97 @@ def getBalancedCrownEnemyRando(spoiler: Spoiler, crown_setting, damage_ohko_sett
     return enemy_swaps_library
 
 
+def writeEnemy(spoiler: Spoiler, cont_map_spawner_address: int, new_enemy_id: int, spawner: Spawner, cont_map_id: Maps, crown_timer: int = 0):
+    """Write enemy to ROM."""
+    ROM().seek(cont_map_spawner_address + spawner.offset)
+    ROM().writeMultipleBytes(new_enemy_id, 1)
+    # Enemy fixes
+    if new_enemy_id in EnemyMetaData.keys():
+        ROM().seek(cont_map_spawner_address + spawner.offset + 0x10)
+        ROM().writeMultipleBytes(EnemyMetaData[new_enemy_id].aggro, 1)
+        if new_enemy_id == Enemies.RoboKremling:
+            ROM().seek(cont_map_spawner_address + spawner.offset + 0xB)
+            ROM().writeMultipleBytes(0xC8, 1)
+        elif new_enemy_id == Enemies.SpiderSmall:
+            ROM().seek(cont_map_spawner_address + spawner.offset + 0x1)
+            ROM().writeMultipleBytes(0, 1)
+            ROM().seek(cont_map_spawner_address + spawner.offset + 0xB)
+            ROM().writeMultipleBytes(0, 1)
+            # Spawning fixes
+            # Prevent respawn anim if that's how they initially appear
+            ROM().seek(cont_map_spawner_address + spawner.offset + 0x12)
+            init_respawn_state = int.from_bytes(ROM().readBytes(1), "big")
+            if init_respawn_state == 3:
+                ROM().seek(cont_map_spawner_address + spawner.offset + 0x12)
+                ROM().writeMultipleBytes(0, 1)
+            # Prevent them respawning
+            ROM().seek(cont_map_spawner_address + spawner.offset + 0x14)
+            ROM().writeMultipleBytes(0, 1)
+
+        if (cont_map_id in crown_maps or cont_map_id in minigame_maps_total) and EnemyMetaData[new_enemy_id].air:
+            height = 300
+            if cont_map_id in crown_maps:
+                height = int(random.uniform(250, 300))
+            ROM().seek(cont_map_spawner_address + spawner.offset + 0x6)
+            ROM().writeMultipleBytes(height, 2)
+        if cont_map_id in crown_maps and new_enemy_id == Enemies.GetOut:
+            ROM().seek(cont_map_spawner_address + spawner.offset + 0xA)
+            get_out_timer = 20
+            if crown_timer > 20:
+                damage_mult = 1
+                damage_amts = {DamageAmount.double: 2, DamageAmount.quad: 4, DamageAmount.ohko: 12}
+                if spoiler.settings.damage_amount in damage_amts:
+                    damage_mult = damage_amts[spoiler.settings.damage_amount]
+                get_out_timer = random.randint(int(crown_timer / (12 / damage_mult)) + 1, crown_timer - 1)
+            if get_out_timer == 0:
+                get_out_timer = 1
+            ROM().writeMultipleBytes(get_out_timer, 1)
+            ROM().writeMultipleBytes(get_out_timer, 1)
+        # Scale Adjustment
+        ROM().seek(cont_map_spawner_address + spawner.offset + 0xF)
+        default_scale = int.from_bytes(ROM().readBytes(1), "big")
+        if EnemyMetaData[new_enemy_id].size_cap > 0:
+            if default_scale > EnemyMetaData[new_enemy_id].size_cap:
+                ROM().seek(cont_map_spawner_address + spawner.offset + 0xF)
+                ROM().writeMultipleBytes(EnemyMetaData[new_enemy_id].size_cap, 1)
+        ROM().seek(cont_map_spawner_address + spawner.offset + 0xF)
+        pre_size = int.from_bytes(ROM().readBytes(1), "big")
+        if pre_size < EnemyMetaData[new_enemy_id].bbbarrage_min_scale and cont_map_id in bbbarrage_maps:
+            ROM().seek(cont_map_spawner_address + spawner.offset + 0xF)
+            ROM().writeMultipleBytes(EnemyMetaData[new_enemy_id].bbbarrage_min_scale, 1)
+        # Speed Adjustment
+        if spoiler.settings.enemy_speed_rando:
+            if cont_map_id not in banned_speed_maps:
+                min_speed = EnemyMetaData[new_enemy_id].min_speed
+                max_speed = EnemyMetaData[new_enemy_id].max_speed
+                if min_speed > 0 and max_speed > 0:
+                    ROM().seek(cont_map_spawner_address + spawner.offset + 0xD)
+                    agg_speed = random.randint(min_speed, max_speed)
+                    ROM().writeMultipleBytes(agg_speed, 1)
+                    ROM().seek(cont_map_spawner_address + spawner.offset + 0xC)
+                    ROM().writeMultipleBytes(random.randint(min_speed, agg_speed), 1)
+        if cont_map_id in bbbarrage_maps:
+            # Reduce Speeds
+            ROM().seek(cont_map_spawner_address + spawner.offset + 0xC)
+            speeds = []
+            for x in range(2):
+                speeds.append(int.from_bytes(ROM().readBytes(1), "big"))
+            ROM().seek(cont_map_spawner_address + spawner.offset + 0xC)
+            for x in speeds:
+                ROM().writeMultipleBytes(int(x * 0.75), 1)
+        elif cont_map_id in minigame_maps_beavers and new_enemy_id == Enemies.BeaverGold:
+            for speed_offset in [0xC, 0xD]:
+                ROM().seek(cont_map_spawner_address + spawner.offset + speed_offset)
+                default_speed = int.from_bytes(ROM().readBytes(1), "big")
+                new_speed = int(default_speed * 1.1)
+                if new_speed > 255:
+                    new_speed = 255
+                ROM().seek(cont_map_spawner_address + spawner.offset + speed_offset)
+                ROM().writeMultipleBytes(new_speed, 1)
+
+
 def randomize_enemies(spoiler: Spoiler):
     """Write replaced enemies to ROM."""
-    enemy_replacements = [
-        {
-            "container_map": 7,
-            "kasplat_swaps": [
-                {
-                    "vanilla_location": 0,  # Kong index which is tied to the kasplat. Eg. This would take the DK Kasplat location (DK is kong 0)
-                    "replace_with": 1,  # Which Kasplat will go in that position (0 = DK, 1 = Diddy etc)
-                },
-                {"vanilla_location": 1, "replace_with": 3},
-                {"vanilla_location": 2, "replace_with": 0},
-                {"vanilla_location": 3, "replace_with": 2},
-            ],
-        }
-    ]
-    resetPkmnSnap()
-    valid_maps = [
-        Maps.JapesMountain,
-        Maps.JungleJapes,
-        Maps.JapesTinyHive,
-        Maps.JapesLankyCave,
-        Maps.AztecTinyTemple,
-        Maps.HideoutHelm,
-        Maps.AztecDonkey5DTemple,
-        Maps.AztecDiddy5DTemple,
-        Maps.AztecLanky5DTemple,
-        Maps.AztecTiny5DTemple,
-        Maps.AztecChunky5DTemple,
-        Maps.AztecLlamaTemple,
-        Maps.FranticFactory,
-        Maps.FactoryPowerHut,
-        Maps.GloomyGalleon,
-        Maps.GalleonSickBay,
-        Maps.JapesUnderGround,
-        Maps.Isles,
-        Maps.FactoryCrusher,
-        Maps.AngryAztec,
-        Maps.GalleonSealRace,
-        Maps.JapesBaboonBlast,
-        Maps.AztecBaboonBlast,
-        Maps.Galleon2DShip,
-        Maps.Galleon5DShipDiddyLankyChunky,
-        Maps.Galleon5DShipDKTiny,
-        Maps.GalleonTreasureChest,
-        Maps.GalleonMermaidRoom,
-        Maps.FungiForest,
-        Maps.GalleonLighthouse,
-        Maps.GalleonMechafish,
-        Maps.ForestAnthill,
-        Maps.GalleonBaboonBlast,
-        Maps.ForestMinecarts,
-        Maps.ForestMillAttic,
-        Maps.ForestRafters,
-        Maps.ForestMillAttic,
-        Maps.ForestThornvineBarn,
-        # Maps.ForestSpider, # Causes a lot of enemies to fall into the pit of their own volition
-        Maps.ForestMillFront,
-        Maps.ForestMillBack,
-        Maps.ForestLankyMushroomsRoom,
-        Maps.CrystalCaves,
-        Maps.CavesDonkeyIgloo,
-        Maps.CavesDiddyIgloo,
-        Maps.CavesLankyIgloo,
-        Maps.CavesTinyIgloo,
-        # Maps.CavesChunkyIgloo, # Fireball with glasses is here
-        Maps.CavesDonkeyCabin,
-        Maps.CavesDiddyLowerCabin,
-        Maps.CavesDiddyUpperCabin,
-        Maps.CavesLankyCabin,
-        Maps.CavesTinyCabin,
-        Maps.CavesChunkyCabin,
-        Maps.CreepyCastle,
-        Maps.CastleBallroom,
-        Maps.CavesRotatingCabin,
-        Maps.CavesFrozenCastle,
-        Maps.CastleCrypt,
-        Maps.CastleMausoleum,
-        Maps.CastleUpperCave,
-        Maps.CastleLowerCave,
-        Maps.CastleTower,
-        Maps.CastleMinecarts,
-        Maps.FactoryBaboonBlast,
-        Maps.CastleMuseum,
-        Maps.CastleLibrary,
-        Maps.CastleDungeon,
-        Maps.CastleTree,
-        Maps.CastleShed,
-        Maps.CastleTrashCan,
-        Maps.JungleJapesLobby,
-        Maps.AngryAztecLobby,
-        Maps.FranticFactoryLobby,
-        Maps.GloomyGalleonLobby,
-        Maps.FungiForestLobby,
-        Maps.CrystalCavesLobby,
-        Maps.CreepyCastleLobby,
-        Maps.HideoutHelmLobby,
-        Maps.GalleonSubmarine,
-        Maps.CavesBaboonBlast,
-        Maps.CastleBaboonBlast,
-        Maps.ForestBaboonBlast,
-        Maps.IslesSnideRoom,
-        Maps.ForestGiantMushroom,
-        Maps.ForestLankyZingersRoom,
-        Maps.CastleBoss,
-    ]
-    crown_maps = [Maps.JapesCrown, Maps.AztecCrown, Maps.FactoryCrown, Maps.GalleonCrown, Maps.ForestCrown, Maps.CavesCrown, Maps.CastleCrown, Maps.HelmCrown, Maps.SnidesCrown, Maps.LobbyCrown]
-    minigame_maps_easy = [
-        Maps.BusyBarrelBarrageEasy,
-        Maps.BusyBarrelBarrageHard,
-        Maps.BusyBarrelBarrageNormal,
-        # Maps.HelmBarrelDiddyKremling, # Only kremlings activate the switch
-        Maps.HelmBarrelChunkyHidden,
-        Maps.HelmBarrelChunkyShooting,
-    ]
-    minigame_maps_beatable = [Maps.MadMazeMaulEasy, Maps.MadMazeMaulNormal, Maps.MadMazeMaulHard, Maps.MadMazeMaulInsane]
-    minigame_maps_nolimit = [Maps.HelmBarrelLankyMaze, Maps.StashSnatchEasy, Maps.StashSnatchNormal, Maps.StashSnatchHard, Maps.StashSnatchInsane]
-    minigame_maps_beavers = [Maps.BeaverBotherEasy, Maps.BeaverBotherNormal, Maps.BeaverBotherHard]
-    minigame_maps_total = minigame_maps_easy.copy()
-    minigame_maps_total.extend(minigame_maps_beatable)
-    minigame_maps_total.extend(minigame_maps_nolimit)
-    minigame_maps_total.extend(minigame_maps_beavers)
-    bbbarrage_maps = (Maps.BusyBarrelBarrageEasy, Maps.BusyBarrelBarrageNormal, Maps.BusyBarrelBarrageHard)
     # Define Enemy Classes, Used for detection of if an enemy will be replaced
     enemy_classes = {
         EnemySubtype.GroundSimple: [
@@ -392,12 +528,8 @@ def randomize_enemies(spoiler: Spoiler):
         ],
         EnemySubtype.Water: [Enemies.Shuri, Enemies.Gimpfish, Enemies.Pufftup],
     }
-    replacement_priority = {
-        EnemySubtype.GroundSimple: [EnemySubtype.GroundBeefy, EnemySubtype.Water, EnemySubtype.Air],
-        EnemySubtype.GroundBeefy: [EnemySubtype.GroundSimple, EnemySubtype.Water, EnemySubtype.Air],
-        EnemySubtype.Water: [EnemySubtype.Air, EnemySubtype.GroundSimple, EnemySubtype.GroundBeefy],
-        EnemySubtype.Air: [EnemySubtype.GroundSimple, EnemySubtype.GroundBeefy, EnemySubtype.Water],
-    }
+    resetPkmnSnap()
+
     # Define Enemies that can be placed in those classes
     enemy_placement_classes = {}
     banned_classes = []
@@ -469,7 +601,7 @@ def randomize_enemies(spoiler: Spoiler):
                     arr.append(random.choice(enemy_placement_classes[enemy_class]))
                 enemy_swaps[enemy_class] = arr
             offset += 2
-            for x in range(spawner_count):
+            for _ in range(spawner_count):
                 ROM().seek(cont_map_spawner_address + offset)
                 enemy_id = int.from_bytes(ROM().readBytes(1), "big")
                 ROM().seek(cont_map_spawner_address + offset + 0x13)
@@ -478,48 +610,19 @@ def randomize_enemies(spoiler: Spoiler):
                 ROM().seek(cont_map_spawner_address + offset + 0x11)
                 extra_count = int.from_bytes(ROM().readBytes(1), "big")
                 offset += 0x16 + (extra_count * 2)
-                vanilla_spawners.append({"enemy_id": enemy_id, "offset": init_offset, "index": enemy_index})
+                vanilla_spawners.append(Spawner(enemy_id, init_offset, enemy_index))
             if spoiler.settings.enemy_rando and cont_map_id in valid_maps:
                 for enemy_class in enemy_swaps:
                     arr = enemy_swaps[enemy_class]
                     class_types = enemy_classes[enemy_class]
                     sub_index = 0
                     for spawner in vanilla_spawners:
-                        if spawner["enemy_id"] in class_types:
-                            if cont_map_id != Maps.FranticFactory or spawner["index"] < 35 or spawner["index"] > 44:
+                        if spawner.enemy_id in class_types:
+                            if cont_map_id != Maps.FranticFactory or spawner.index < 35 or spawner.index > 44:
                                 new_enemy_id = arr[sub_index]
                                 sub_index += 1
-                                if new_enemy_id != Enemies.Book or cont_map_id not in (Maps.CavesDonkeyCabin, Maps.JapesLankyCave, Maps.AngryAztecLobby):
-                                    if new_enemy_id != Enemies.SpiderSmall or cont_map_id not in (Maps.JungleJapes, Maps.JapesMountain):
-                                        if new_enemy_id != Enemies.Kosha or cont_map_id not in (Maps.CavesDiddyLowerCabin, Maps.CavesTinyCabin):
-                                            if new_enemy_id != Enemies.Guard or cont_map_id not in (Maps.CavesDiddyLowerCabin, Maps.CavesTinyIgloo, Maps.CavesTinyCabin):
-                                                if cont_map_id != Maps.AztecTinyTemple or spawner["index"] < 20 or spawner["index"] > 23 or not no_ground_simple_selected:
-                                                    if cont_map_id != Maps.CastleBallroom or spawner["index"] > 5 or not no_ground_simple_selected:
-                                                        if cont_map_id != Maps.CastleLibrary or spawner["index"] > 4 or not no_ground_simple_selected:
-                                                            if cont_map_id != Maps.ForestSpider or EnemyMetaData[new_enemy_id].aggro != 4:  # Prevent enemies being stuck in the ceiling
-                                                                ROM().seek(cont_map_spawner_address + spawner["offset"])
-                                                                ROM().writeMultipleBytes(new_enemy_id, 1)
-                                                                if new_enemy_id in EnemyMetaData.keys():
-                                                                    ROM().seek(cont_map_spawner_address + spawner["offset"] + 0x10)
-                                                                    ROM().writeMultipleBytes(EnemyMetaData[new_enemy_id].aggro, 1)
-                                                                    if new_enemy_id == Enemies.RoboKremling:
-                                                                        ROM().seek(cont_map_spawner_address + spawner["offset"] + 0xB)
-                                                                        ROM().writeMultipleBytes(0xC8, 1)
-                                                                    ROM().seek(cont_map_spawner_address + spawner["offset"] + 0xF)
-                                                                    default_scale = int.from_bytes(ROM().readBytes(1), "big")
-                                                                    if EnemyMetaData[new_enemy_id].size_cap > 0:
-                                                                        if default_scale > EnemyMetaData[new_enemy_id].size_cap:
-                                                                            ROM().seek(cont_map_spawner_address + spawner["offset"] + 0xF)
-                                                                            ROM().writeMultipleBytes(EnemyMetaData[new_enemy_id].size_cap, 1)
-                                                                    if spoiler.settings.enemy_speed_rando:
-                                                                        min_speed = EnemyMetaData[new_enemy_id].min_speed
-                                                                        max_speed = EnemyMetaData[new_enemy_id].max_speed
-                                                                        if min_speed > 0 and max_speed > 0:
-                                                                            ROM().seek(cont_map_spawner_address + spawner["offset"] + 0xD)
-                                                                            agg_speed = random.randint(min_speed, max_speed)
-                                                                            ROM().writeMultipleBytes(agg_speed, 1)
-                                                                            ROM().seek(cont_map_spawner_address + spawner["offset"] + 0xC)
-                                                                            ROM().writeMultipleBytes(random.randint(min_speed, agg_speed), 1)
+                                if not isBanned(new_enemy_id, cont_map_id, spawner, no_ground_simple_selected):
+                                    writeEnemy(spoiler, cont_map_spawner_address, new_enemy_id, spawner, cont_map_id, 0)
             if spoiler.settings.enemy_rando and cont_map_id in minigame_maps_total:
                 tied_enemy_list = []
                 if cont_map_id in minigame_maps_easy:
@@ -534,141 +637,59 @@ def randomize_enemies(spoiler: Spoiler):
                 elif cont_map_id in minigame_maps_beavers:
                     tied_enemy_list = minigame_enemies_beavers.copy()
                 for spawner in vanilla_spawners:
-                    if spawner["enemy_id"] in tied_enemy_list:
+                    if spawner.enemy_id in tied_enemy_list:
                         new_enemy_id = random.choice(tied_enemy_list)
-                        # Balance beaver bother so it's a 2:1 ratio of blue to gold beavers
+                        # Balance beaver bother so it's a 4:1 ratio of blue to gold beavers, guarantee 1 gold
                         if cont_map_id in minigame_maps_beavers:
-                            new_enemy_id = random.choice([Enemies.BeaverBlue, Enemies.BeaverBlue, Enemies.BeaverGold])
-                        ROM().seek(cont_map_spawner_address + spawner["offset"])
-                        ROM().writeMultipleBytes(new_enemy_id, 1)
-                        if new_enemy_id in EnemyMetaData.keys():
-                            ROM().seek(cont_map_spawner_address + spawner["offset"] + 0x10)
-                            ROM().writeMultipleBytes(EnemyMetaData[new_enemy_id].aggro, 1)
-                            if new_enemy_id == Enemies.RoboKremling:
-                                ROM().seek(cont_map_spawner_address + spawner["offset"] + 0xB)
-                                ROM().writeMultipleBytes(0xC8, 1)
-                            if EnemyMetaData[new_enemy_id].air:
-                                ROM().seek(cont_map_spawner_address + spawner["offset"] + 0x6)
-                                ROM().writeMultipleBytes(300, 2)
-                            ROM().seek(cont_map_spawner_address + spawner["offset"] + 0xF)
-                            default_scale = int.from_bytes(ROM().readBytes(1), "big")
-                            if EnemyMetaData[new_enemy_id].size_cap > 0:
-                                if default_scale > EnemyMetaData[new_enemy_id].size_cap:
-                                    ROM().seek(cont_map_spawner_address + spawner["offset"] + 0xF)
-                                    ROM().writeMultipleBytes(EnemyMetaData[new_enemy_id].size_cap, 1)
-                            ROM().seek(cont_map_spawner_address + spawner["offset"] + 0xF)
-                            pre_size = int.from_bytes(ROM().readBytes(1), "big")
-                            if pre_size < EnemyMetaData[new_enemy_id].bbbarrage_min_scale and cont_map_id in bbbarrage_maps:
-                                ROM().seek(cont_map_spawner_address + spawner["offset"] + 0xF)
-                                ROM().writeMultipleBytes(EnemyMetaData[new_enemy_id].bbbarrage_min_scale, 1)
-                            if spoiler.settings.enemy_speed_rando and cont_map_id not in minigame_maps_beavers and cont_map_id not in bbbarrage_maps:
-                                min_speed = EnemyMetaData[new_enemy_id].min_speed
-                                max_speed = EnemyMetaData[new_enemy_id].max_speed
-                                if min_speed > 0 and max_speed > 0:
-                                    ROM().seek(cont_map_spawner_address + spawner["offset"] + 0xD)
-                                    agg_speed = random.randint(min_speed, max_speed)
-                                    ROM().writeMultipleBytes(agg_speed, 1)
-                                    ROM().seek(cont_map_spawner_address + spawner["offset"] + 0xC)
-                                    ROM().writeMultipleBytes(random.randint(min_speed, agg_speed), 1)
-                            if cont_map_id in bbbarrage_maps:
-                                ROM().seek(cont_map_spawner_address + spawner["offset"] + 0xC)
-                                speeds = []
-                                for x in range(2):
-                                    speeds.append(int.from_bytes(ROM().readBytes(1), "big"))
-                                ROM().seek(cont_map_spawner_address + spawner["offset"] + 0xC)
-                                for x in speeds:
-                                    ROM().writeMultipleBytes(int(x * 0.75), 1)
-                            if new_enemy_id == Enemies.BeaverGold and cont_map_id in minigame_maps_beavers:
-                                for speed_offset in [0xC, 0xD]:
-                                    ROM().seek(cont_map_spawner_address + spawner["offset"] + speed_offset)
-                                    default_speed = int.from_bytes(ROM().readBytes(1), "big")
-                                    new_speed = int(default_speed * 1.1)
-                                    if new_speed > 255:
-                                        new_speed = 255
-                                    ROM().seek(cont_map_spawner_address + spawner["offset"] + speed_offset)
-                                    ROM().writeMultipleBytes(new_speed, 1)
+                            if spawner.index == 1:
+                                new_enemy_id = Enemies.BeaverGold
+                            else:
+                                selection = random.uniform(0, 1)
+                                new_enemy_id = Enemies.BeaverBlue
+                                if selection < 0.2:
+                                    new_enemy_id = Enemies.BeaverGold
+                        writeEnemy(spoiler, cont_map_spawner_address, new_enemy_id, spawner, cont_map_id, 0)
             if spoiler.settings.crown_enemy_rando != CrownEnemyRando.off and cont_map_id in crown_maps:
                 # Determine Crown Timer
-                low_limit = 5
-                if spoiler.settings.crown_enemy_rando == CrownEnemyRando.easy:
-                    low_limit = 5
-                elif spoiler.settings.crown_enemy_rando == CrownEnemyRando.medium:
-                    low_limit = 15
-                elif spoiler.settings.crown_enemy_rando == CrownEnemyRando.hard:
-                    low_limit = 30
+                limits = {
+                    CrownEnemyRando.easy: 5,
+                    CrownEnemyRando.medium: 15,
+                    CrownEnemyRando.hard: 30,
+                }
+                low_limit = limits.get(spoiler.settings.crown_enemy_rando, 5)
                 crown_timer = random.randint(low_limit, 60)
                 # Place Enemies
                 for spawner in vanilla_spawners:
-                    if spawner["enemy_id"] in crown_enemies:
+                    if spawner.enemy_id in crown_enemies:
                         new_enemy_id = crown_enemies_library[cont_map_id].pop()
-                        ROM().seek(cont_map_spawner_address + spawner["offset"])
-                        ROM().writeMultipleBytes(new_enemy_id, 1)
-                        if new_enemy_id in EnemyMetaData.keys():
-                            ROM().seek(cont_map_spawner_address + spawner["offset"] + 0x10)
-                            ROM().writeMultipleBytes(EnemyMetaData[new_enemy_id].aggro, 1)
-                            if new_enemy_id == Enemies.RoboKremling:
-                                ROM().seek(cont_map_spawner_address + spawner["offset"] + 0xB)
-                                ROM().writeMultipleBytes(0xC8, 1)
-                            if EnemyMetaData[new_enemy_id].air:
-                                ROM().seek(cont_map_spawner_address + spawner["offset"] + 0x6)
-                                ROM().writeMultipleBytes(300, 2)
-                            if new_enemy_id == Enemies.GetOut:
-                                ROM().seek(cont_map_spawner_address + spawner["offset"] + 0xA)
-                                get_out_timer = 20
-                                if crown_timer > 20:
-                                    damage_mult = 1
-                                    damage_amts = {DamageAmount.double: 2, DamageAmount.quad: 4, DamageAmount.ohko: 12}
-                                    if spoiler.settings.damage_amount in damage_amts:
-                                        damage_mult = damage_amts[spoiler.settings.damage_amount]
-                                    get_out_timer = random.randint(int(crown_timer / (12 / damage_mult)) + 1, crown_timer - 1)
-                                if get_out_timer == 0:
-                                    get_out_timer = 1
-                                ROM().writeMultipleBytes(get_out_timer, 1)
-                                ROM().writeMultipleBytes(get_out_timer, 1)
-                            ROM().seek(cont_map_spawner_address + spawner["offset"] + 0xF)
-                            default_scale = int.from_bytes(ROM().readBytes(1), "big")
-                            if EnemyMetaData[new_enemy_id].size_cap > 0:
-                                if default_scale > EnemyMetaData[new_enemy_id].size_cap:
-                                    ROM().seek(cont_map_spawner_address + spawner["offset"] + 0xF)
-                                    ROM().writeMultipleBytes(EnemyMetaData[new_enemy_id].size_cap, 1)
-                            if spoiler.settings.enemy_speed_rando:
-                                min_speed = EnemyMetaData[new_enemy_id].min_speed
-                                max_speed = EnemyMetaData[new_enemy_id].max_speed
-                                if min_speed > 0 and max_speed > 0:
-                                    ROM().seek(cont_map_spawner_address + spawner["offset"] + 0xD)
-                                    agg_speed = random.randint(min_speed, max_speed)
-                                    ROM().writeMultipleBytes(agg_speed, 1)
-                                    ROM().seek(cont_map_spawner_address + spawner["offset"] + 0xC)
-                                    ROM().writeMultipleBytes(random.randint(min_speed, agg_speed), 1)
-                    elif spawner["enemy_id"] == Enemies.BattleCrownController:
-                        ROM().seek(cont_map_spawner_address + spawner["offset"] + 0xB)
+                        writeEnemy(spoiler, cont_map_spawner_address, new_enemy_id, spawner, cont_map_id, crown_timer)
+                    elif spawner.enemy_id == Enemies.BattleCrownController:
+                        ROM().seek(cont_map_spawner_address + spawner.offset + 0xB)
                         ROM().writeMultipleBytes(crown_timer, 1)  # Determine Crown length. DK64 caps at 255 seconds
             non_pkmn_snap_maps = [Maps.ForestSpider, Maps.CavesDiddyLowerCabin, Maps.CavesTinyCabin, Maps.CastleBoss]
             if cont_map_id in valid_maps and cont_map_id not in non_pkmn_snap_maps:
                 # Check Pokemon Snap
                 for spawner in vanilla_spawners:
-                    check = True
-                    if cont_map_id == Maps.AztecTinyTemple and spawner["index"] < 17:
+                    if cont_map_id == Maps.AztecTinyTemple and spawner.index < 17:
                         # Prevent One-Time-Only Enemies in Tiny Temple from being required
-                        check = False
-                    if cont_map_id == Maps.CastleBallroom and spawner["index"] < 6:
+                        continue
+                    if cont_map_id == Maps.CastleBallroom and spawner.index < 6:
                         # Prevent One-Time-Only Enemies in Castle BallRoom from being required
-                        check = False
-                    if cont_map_id == Maps.CastleLibrary and spawner["index"] < 5:
+                        continue
+                    if cont_map_id == Maps.CastleLibrary and spawner.index < 5:
                         # Prevent One-Time-Only Enemies in Castle Library from being required
-                        check = False
-                    if cont_map_id == Maps.AztecTinyTemple and spawner["index"] > 19 and spawner["index"] < 24:
+                        continue
+                    if cont_map_id == Maps.AztecTinyTemple and spawner.index > 19 and spawner.index < 24:
                         # Prevent One-Time-Only Enemies in Tiny Temple from being required
-                        check = False
-                    if cont_map_id == Maps.FranticFactory and spawner["index"] > 34 and spawner["index"] < 45:
+                        continue
+                    if cont_map_id == Maps.FranticFactory and spawner.index > 34 and spawner.index < 45:
                         # Prevent One-Time-Only Enemies in Toy Boss Fight from being required
-                        check = False
-                    if cont_map_id == Maps.CrystalCaves and spawner["index"] < 10:
+                        continue
+                    if cont_map_id == Maps.CrystalCaves and spawner.index < 10:
                         # Prevent Unused Enemies in Caves
-                        check = False
-                    if check:
-                        ROM().seek(cont_map_spawner_address + spawner["offset"])
-                        setPkmnSnapEnemy(int.from_bytes(ROM().readBytes(1), "big"))
+                        continue
+                    ROM().seek(cont_map_spawner_address + spawner.offset)
+                    setPkmnSnapEnemy(int.from_bytes(ROM().readBytes(1), "big"))
             values = [0, 0, 0, 0, 0]
             for enemy_index, enemy in enumerate(pkmn_snap_enemies):
                 if enemy.spawned:

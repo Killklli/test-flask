@@ -16,12 +16,12 @@ from randomizer.Patching.BarrelRando import randomize_barrels
 from randomizer.Patching.BossRando import randomize_bosses
 from randomizer.Patching.CosmeticColors import apply_cosmetic_colors, overwrite_object_colors, applyKrushaKong, writeMiscCosmeticChanges, applyHolidayMode, applyHelmDoorCosmetics, writeBootMessages
 from randomizer.Patching.EnemyRando import randomize_enemies
-from randomizer.Patching.EntranceRando import randomize_entrances, filterEntranceType
+from randomizer.Patching.EntranceRando import randomize_entrances, filterEntranceType, enableSpiderText
 from randomizer.Patching.Hash import get_hash_images
 from randomizer.Patching.KasplatLocationRando import randomize_kasplat_locations
 from randomizer.Patching.KongRando import apply_kongrando_cosmetic
 from randomizer.Patching.MiscSetupChanges import randomize_setup, updateRandomSwitches
-from randomizer.Patching.MoveLocationRando import randomize_moves
+from randomizer.Patching.MoveLocationRando import randomize_moves, place_pregiven_moves
 from randomizer.Patching.MusicRando import randomize_music
 from randomizer.Patching.ItemRando import place_randomized_items
 from randomizer.Patching.Patcher import ROM
@@ -88,7 +88,7 @@ def patching_response(responded_data):
     if spoiler.settings.download_patch_file:
         spoiler.settings.download_patch_file = False
 
-        js.save_text_as_file(codecs.encode(pickle.dumps(spoiler), "base64").decode(), f"dk64-{spoiler.settings.seed_id}.lanky")
+        js.save_text_as_file(codecs.encode(pickle.dumps(spoiler), "base64").decode(), f"dk64r-patch-{spoiler.settings.seed_id}.lanky")
     js.write_seed_history(spoiler.settings.seed_id, codecs.encode(pickle.dumps(spoiler), "base64").decode(), spoiler.settings.public_hash)
     # Write date to ROM for debugging purposes
     dt = js.getDate()
@@ -192,9 +192,7 @@ def patching_response(responded_data):
         ROM().write(bin_value)
 
     boolean_props = [
-        BooleanProperties(spoiler.settings.unlock_all_moves, 0x2D),  # Unlock All Moves
         BooleanProperties(True, 0x2E),  # Fast Start Game
-        BooleanProperties(spoiler.settings.shockwave_status == ShockwaveStatus.start_with, 0x2F),  # Unlock Shockwave
         BooleanProperties(spoiler.settings.enable_tag_anywhere, 0x30),  # Tag Anywhere
         BooleanProperties(spoiler.settings.fps_display, 0x96),  # FPS Display
         BooleanProperties(spoiler.settings.crown_door_item == HelmDoorItem.opened, 0x32),  # Crown Door Open
@@ -214,7 +212,6 @@ def patching_response(responded_data):
         BooleanProperties(spoiler.settings.auto_keys, 0x15B),  # Auto-Turn Keys
         BooleanProperties(spoiler.settings.disco_chunky, 0x12F),  # Disco Chunky
         BooleanProperties(spoiler.settings.tns_location_rando, 0x10E),  # T&S Portal Location Rando
-        BooleanProperties(spoiler.settings.cb_rando or spoiler.settings.coin_rando, 0xAF),  # Show CBs/Coins
         BooleanProperties(spoiler.settings.cb_rando, 0x10B),  # Remove Rock Bunch
         BooleanProperties(spoiler.settings.wrinkly_location_rando or spoiler.settings.remove_wrinkly_puzzles, 0x11F),  # Wrinkly Rando
         BooleanProperties(spoiler.settings.helm_hurry, 0xAE),  # Helm Hurry
@@ -277,6 +274,19 @@ def patching_response(responded_data):
         ROM().seek(sav + 0x4F)
         ROM().write(spoiler.settings.coin_door_item_count)
 
+    # Camera unlocked
+    given_moves = []
+    if spoiler.settings.shockwave_status == ShockwaveStatus.start_with:
+        given_moves.extend([39, 40])  # 39 = Camera, 40 = Shockwave
+    move_bitfields = [0] * 6
+    for move in given_moves:
+        offset = int(move >> 3)
+        check = int(move % 8)
+        move_bitfields[offset] |= 0x80 >> check
+    for offset, value in enumerate(move_bitfields):
+        ROM().seek(sav + 0xD5 + offset)
+        ROM().writeMultipleBytes(value, 1)
+
     # Free Trade Agreement
     if spoiler.settings.free_trade_items:
         ROM().seek(sav + 0x113)
@@ -294,7 +304,7 @@ def patching_response(responded_data):
         if len(enabled_qol) == 0:
             for item in QoLSelector:
                 enabled_qol.append(MiscChangesSelected[item["value"]])
-        write_data = [0, 0]
+        write_data = [0] * 3
         for item in QoLSelector:
             if MiscChangesSelected[item["value"]] in enabled_qol and item["shift"] >= 0:
                 offset = int(item["shift"] >> 3)
@@ -447,6 +457,7 @@ def patching_response(responded_data):
     randomize_coins(spoiler)
     ApplyShopRandomizer(spoiler)
     place_randomized_items(spoiler)  # Has to be after kong rando cosmetic and moves
+    place_pregiven_moves(spoiler)
     remove_existing_indicators(spoiler)
     place_door_locations(spoiler)
     randomize_crown_pads(spoiler)
@@ -455,8 +466,9 @@ def patching_response(responded_data):
     replaceIngameText(spoiler)
     updateRandomSwitches(spoiler)  # Has to be after all setup changes that may alter the item type of slam switches
     writeBootMessages(spoiler)
+    enableSpiderText(spoiler)
 
-    random.seed(spoiler.settings.seed)
+    random.seed(None)
     randomize_music(spoiler)
     applyKrushaKong(spoiler)
     apply_cosmetic_colors(spoiler)
@@ -466,9 +478,11 @@ def patching_response(responded_data):
     applyHelmDoorCosmetics(spoiler)
     random.seed(spoiler.settings.seed)
 
-    if spoiler.settings.wrinkly_hints in [WrinklyHints.standard, WrinklyHints.cryptic]:
+    if spoiler.settings.wrinkly_hints != WrinklyHints.off:
         wipeHints()
         PushHints(spoiler)
+
+    spoiler.updateJSONCosmetics()
 
     # Apply Hash
     order = 0
@@ -509,7 +523,7 @@ def patching_response(responded_data):
             name.innerHTML = setting
             description.innerHTML = FormatSpoiler(value)
     ROM().fixSecurityValue()
-    ROM().save(f"dk64-{spoiler.settings.seed_id}.z64")
+    ROM().save(f"dk64r-rom-{spoiler.settings.seed_id}.z64")
     loop.run_until_complete(ProgressBar().reset())
     js.jq("#nav-settings-tab").tab("show")
 

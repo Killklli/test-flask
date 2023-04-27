@@ -10,7 +10,7 @@ from randomizer.Lists.MapsAndExits import Maps
 class DirtPatchData:
     """Information about the dirt patch location."""
 
-    def __init__(self, *, name="", level=0, map_id=0, vanilla=False, x=0, y=0, z=0, scale=1, rotation=0, group=0, logicregion="", logic=0):
+    def __init__(self, *, name="", level=0, map_id=0, vanilla=False, x=0, y=0, z=0, scale=1, rotation=0, group=0, logicregion="", logic=0, is_fungi_hidden_patch=False) -> None:
         """Initialize with given parameters."""
         self.name = name
         self.level_name = level
@@ -25,8 +25,9 @@ class DirtPatchData:
         self.group = group
         self.logicregion = logicregion
         self.logic = logic
+        self.is_fungi_hidden_patch = is_fungi_hidden_patch
 
-    def setPatch(self, used):
+    def setPatch(self, used: bool) -> None:
         """Set patch's state regarding rando."""
         self.selected = used
 
@@ -182,7 +183,7 @@ DirtPatchLocations = [
         rotation=1934,
         group=2,
         logicregion=Regions.IslesMain,
-        logic=lambda l: (l.GalleonKey or l.phasewalk) and l.shockwave,
+        logic=lambda l: (l.settings.open_lobbies or Events.GalleonKeyTurnedIn in l.Events or l.phasewalk) and l.shockwave,
     ),
     DirtPatchData(
         name="DK Isles: Behind Fungi Building", level=Levels.DKIsles, map_id=Maps.Isles, x=2436.0, y=1498.0, z=817.0, rotation=637, group=2, logicregion=Regions.CabinIsle, logic=lambda l: l.shockwave
@@ -1192,6 +1193,7 @@ DirtPatchLocations = [
         group=2,
         logicregion=Regions.MillArea,
         logic=lambda l: l.shockwave,
+        is_fungi_hidden_patch=True,
     ),
     DirtPatchData(
         name="Fungi Forest: Top of Owl Tree",
@@ -1311,7 +1313,7 @@ DirtPatchLocations = [
         rotation=1137,
         group=4,
         logicregion=Regions.MushroomUpper,
-        logic=lambda l: l.twirl or l.donkey and l.shockwave,
+        logic=lambda l: ((l.istiny and l.twirl) or l.isdonkey) and l.shockwave,
     ),
     DirtPatchData(
         name="Fungi Forest - Forest Giant Mushroom: Next to the cannon below the night door",

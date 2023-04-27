@@ -18,7 +18,6 @@ from randomizer.Enums.Settings import (
     HelmDoorItem,
     LogicType,
     MinigameBarrels,
-    MusicCosmetics,
     RandomPrices,
     ShockwaveStatus,
     ShuffleLoadingZones,
@@ -28,7 +27,7 @@ from randomizer.Enums.Settings import (
 from randomizer.Enums.Transitions import Transitions
 from randomizer.Enums.Types import Types
 from randomizer.Lists.Item import ItemFromKong, ItemList, KongFromItem, NameFromKong
-from randomizer.Lists.Location import LocationList
+from randomizer.Lists.Location import LocationList, PreGivenLocations
 from randomizer.Lists.MapsAndExits import GetExitId, GetMapId, Maps
 from randomizer.Lists.Minigame import BarrelMetaData, HelmMinigameLocations, MinigameRequirements
 from randomizer.Prices import ProgressiveMoves
@@ -47,6 +46,7 @@ class Spoiler:
         self.woth = {}
         self.woth_locations = {}
         self.woth_paths = {}
+        self.krool_paths = {}
         self.shuffled_barrel_data = {}
         self.shuffled_exit_data = {}
         self.shuffled_exit_instructions = []
@@ -79,6 +79,9 @@ class Spoiler:
                 if self.settings.training_barrels == TrainingBarrels.normal:
                     for tbarrel_type in ["dive", "orange", "barrel", "vine"]:
                         master_moves.append({"move_type": "flag", "flag": tbarrel_type, "price": 0})
+                else:
+                    for tbarrel_type in ["dive", "orange", "barrel", "vine"]:
+                        master_moves.append({"move_type": None})
             elif move_master_type == 2:
                 # BFI
                 if self.settings.shockwave_status == ShockwaveStatus.vanilla:
@@ -181,6 +184,7 @@ class Spoiler:
         settings["Select Starting Keys"] = self.settings.select_keys
         if not self.settings.keys_random:
             settings["Number of Keys Required"] = self.settings.krool_key_count
+        settings["Starting Moves Count"] = self.settings.starting_moves_count
         settings["Fast Start"] = self.settings.fast_start_beginning_of_game
         settings["Helm Setting"] = self.settings.helm_setting.name
         settings["Quality of Life"] = self.settings.quality_of_life
@@ -193,43 +197,6 @@ class Spoiler:
             settings["Game Mode"] = "Helm Hurry"
         humanspoiler["Settings"] = settings
         humanspoiler["Cosmetics"] = {}
-        if self.settings.colors != {} or self.settings.klaptrap_model_index:
-            humanspoiler["Cosmetics"]["Colors and Models"] = {}
-            for color_item in self.settings.colors:
-                if color_item == "dk":
-                    humanspoiler["Cosmetics"]["Colors and Models"]["DK Color"] = self.settings.colors[color_item]
-                else:
-                    humanspoiler["Cosmetics"]["Colors and Models"][f"{color_item.capitalize()} Color"] = self.settings.colors[color_item]
-            klap_models = {
-                0x19: "Beaver",
-                0x1E: "Klobber",
-                0x20: "Kaboom",
-                0x21: "Green Klaptrap",
-                0x22: "Purple Klaptrap",
-                0x23: "Red Klaptrap",
-                0x24: "Klaptrap Teeth",
-                0x26: "Krash",
-                0x27: "Troff",
-                0x30: "N64 Logo",
-                0x34: "Mech Fish",
-                0x42: "Krossbones",
-                0x47: "Rabbit",
-                0x4B: "Minecart Skeleton Head",
-                0x51: "Tomato",
-                0x62: "Ice Tomato",
-                0x69: "Golden Banana",
-                0x70: "Microbuffer",
-                0x72: "Bell",
-                0x96: "Missile (Car Race)",
-                0xB0: "Red Buoy",
-                0xB1: "Green Buoy",
-                0xBD: "Rareware Logo",
-            }
-            if self.settings.klaptrap_model_index in klap_models:
-                humanspoiler["Cosmetics"]["Colors and Models"]["Klaptrap Model"] = klap_models[self.settings.klaptrap_model_index]
-            else:
-                humanspoiler["Cosmetics"]["Colors and Models"]["Klaptrap Model"] = f"Unknown Model {hex(self.settings.klaptrap_model_index)}"
-
         humanspoiler["Requirements"] = {}
         if self.settings.random_starting_region:
             humanspoiler["Game Start"] = {}
@@ -274,7 +241,7 @@ class Spoiler:
             humanspoiler["End Game"]["Coin Door Item"] = self.settings.coin_door_item.name
             humanspoiler["End Game"]["Coin Door Item Amount"] = self.settings.coin_door_item_count
         if self.settings.shuffle_items:
-            humanspoiler["Item Pool"] = [enum.name for enum in self.settings.shuffled_location_types]
+            humanspoiler["Item Pool"] = list(set([enum.name for enum in self.settings.shuffled_location_types]))
         humanspoiler["Items"] = {
             "Kongs": {},
             "Shops": {},
@@ -328,16 +295,39 @@ class Spoiler:
                 wothSlams += 1
                 extra = " " + str(wothSlams)
             humanspoiler["Paths"][destination_item.name + extra] = path_dict
+        # Paths for K. Rool phases - also do not show up on the site, just for debugging
+        for kong, path in self.krool_paths.items():
+            path_dict = {}
+            for path_loc_id in path:
+                path_location = LocationList[path_loc_id]
+                path_item = ItemList[path_location.item]
+                path_dict[path_location.name] = path_item.name
+            phase_name = "K. Rool Donkey Phase"
+            if kong == Kongs.diddy:
+                phase_name = "K. Rool Diddy Phase"
+            elif kong == Kongs.lanky:
+                phase_name = "K. Rool Lanky Phase"
+            elif kong == Kongs.tiny:
+                phase_name = "K. Rool Tiny Phase"
+            elif kong == Kongs.chunky:
+                phase_name = "K. Rool Chunky Phase"
+            humanspoiler["Paths"][phase_name] = path_dict
 
+        self.pregiven_items = []
         for location_id, location in LocationList.items():
             # No need to spoiler constants or hints
             if location.type == Types.Constant or location.type == Types.Hint:
                 continue
+            if location_id in PreGivenLocations:
+                self.pregiven_items.append(location.item)
             # Prevent weird null issues but get the item at the location
             if location.item is None:
                 item = Items.NoItem
             else:
                 item = ItemList[location.item]
+            # Empty PreGiven locations don't really exist and shouldn't show up in the spoiler log
+            if location.type == Types.PreGivenMove and location.item in (None, Items.NoItem):
+                continue
             # Separate Kong locations
             if location.type == Types.Kong:
                 humanspoiler["Items"]["Kongs"][location.name] = item.name
@@ -366,7 +356,7 @@ class Spoiler:
             # Filter everything else by level - each location conveniently contains a level-identifying bit in their name
             else:
                 level = "Special"
-                if "Isles" in location.name:
+                if "Isles" in location.name or location.type == Types.PreGivenMove:
                     level = "DK Isles"
                 elif "Japes" in location.name:
                     level = "Jungle Japes"
@@ -510,12 +500,6 @@ class Spoiler:
             if len(shuffled_barrels) > 0:
                 humanspoiler["Shuffled Bonus Barrels"] = shuffled_barrels
 
-        if self.settings.music_bgm == MusicCosmetics.randomized:
-            humanspoiler["Cosmetics"]["Background Music"] = self.music_bgm_data
-        if self.settings.music_fanfares == MusicCosmetics.randomized:
-            humanspoiler["Cosmetics"]["Fanfares"] = self.music_fanfare_data
-        if self.settings.music_events == MusicCosmetics.randomized:
-            humanspoiler["Cosmetics"]["Event Themes"] = self.music_event_data
         if self.settings.kasplat_rando:
             humanspoiler["Shuffled Kasplats"] = self.human_kasplats
         if self.settings.random_fairies:
@@ -527,7 +511,20 @@ class Spoiler:
             humanspoiler["Shuffled Bananaport Levels"] = shuffled_warp_levels
             humanspoiler["Shuffled Bananaports"] = self.human_warp_locations
         if len(self.microhints) > 0:
-            humanspoiler["Direct Item Hints"] = self.microhints
+            human_microhints = {}
+            for name, hint in self.microhints.items():
+                filtered_hint = hint.replace("\x04", "")
+                filtered_hint = filtered_hint.replace("\x05", "")
+                filtered_hint = filtered_hint.replace("\x06", "")
+                filtered_hint = filtered_hint.replace("\x07", "")
+                filtered_hint = filtered_hint.replace("\x08", "")
+                filtered_hint = filtered_hint.replace("\x09", "")
+                filtered_hint = filtered_hint.replace("\x0a", "")
+                filtered_hint = filtered_hint.replace("\x0b", "")
+                filtered_hint = filtered_hint.replace("\x0c", "")
+                filtered_hint = filtered_hint.replace("\x0d", "")
+                human_microhints[name] = filtered_hint
+            humanspoiler["Direct Item Hints"] = human_microhints
         if len(self.hint_list) > 0:
             human_hint_list = {}
             # Here it filters out the coloring from the hints to make it actually readable in the spoiler log
@@ -537,6 +534,11 @@ class Spoiler:
                 filtered_hint = filtered_hint.replace("\x06", "")
                 filtered_hint = filtered_hint.replace("\x07", "")
                 filtered_hint = filtered_hint.replace("\x08", "")
+                filtered_hint = filtered_hint.replace("\x09", "")
+                filtered_hint = filtered_hint.replace("\x0a", "")
+                filtered_hint = filtered_hint.replace("\x0b", "")
+                filtered_hint = filtered_hint.replace("\x0c", "")
+                filtered_hint = filtered_hint.replace("\x0d", "")
                 human_hint_list[name] = filtered_hint
             humanspoiler["Wrinkly Hints"] = human_hint_list
         if self.settings.wrinkly_location_rando:
@@ -544,7 +546,7 @@ class Spoiler:
         if self.settings.tns_location_rando:
             humanspoiler["T&S Portal Locations"] = self.human_portal_doors
         if self.settings.crown_placement_rando:
-            humanspoiler["Shuffled Crowns"] = self.human_crowns
+            humanspoiler["Battle Arena Locations"] = self.human_crowns
         level_dict = {
             Levels.DKIsles: "DK Isles",
             Levels.JungleJapes: "Jungle Japes",
@@ -621,6 +623,53 @@ class Spoiler:
                         map_name = map_name.replace(combo, combo.replace(" ", ""))
                 humanspoiler["Coin Locations"][f"{lvl_name.split(' ')[idx]} {NameFromKong(group['kong'])}"].append(f"{map_name.strip()}: {group['name']}")
 
+        self.json = json.dumps(humanspoiler, indent=4)
+
+    def updateJSONCosmetics(self):
+        """Update spoiler JSON with cosmetic settings."""
+        humanspoiler = json.loads(self.json)
+        if self.settings.colors != {} or self.settings.klaptrap_model_index:
+            humanspoiler["Cosmetics"]["Colors and Models"] = {}
+            for color_item in self.settings.colors:
+                if color_item == "dk":
+                    humanspoiler["Cosmetics"]["Colors and Models"]["DK Color"] = self.settings.colors[color_item]
+                else:
+                    humanspoiler["Cosmetics"]["Colors and Models"][f"{color_item.capitalize()} Color"] = self.settings.colors[color_item]
+            klap_models = {
+                0x19: "Beaver",
+                0x1E: "Klobber",
+                0x20: "Kaboom",
+                0x21: "Green Klaptrap",
+                0x22: "Purple Klaptrap",
+                0x23: "Red Klaptrap",
+                0x24: "Klaptrap Teeth",
+                0x26: "Krash",
+                0x27: "Troff",
+                0x30: "N64 Logo",
+                0x34: "Mech Fish",
+                0x42: "Krossbones",
+                0x47: "Rabbit",
+                0x4B: "Minecart Skeleton Head",
+                0x51: "Tomato",
+                0x62: "Ice Tomato",
+                0x69: "Golden Banana",
+                0x70: "Microbuffer",
+                0x72: "Bell",
+                0x96: "Missile (Car Race)",
+                0xB0: "Red Buoy",
+                0xB1: "Green Buoy",
+                0xBD: "Rareware Logo",
+            }
+            if self.settings.klaptrap_model_index in klap_models:
+                humanspoiler["Cosmetics"]["Colors and Models"]["Klaptrap Model"] = klap_models[self.settings.klaptrap_model_index]
+            else:
+                humanspoiler["Cosmetics"]["Colors and Models"]["Klaptrap Model"] = f"Unknown Model {hex(self.settings.klaptrap_model_index)}"
+        if self.settings.music_bgm_randomized:
+            humanspoiler["Cosmetics"]["Background Music"] = self.music_bgm_data
+        if self.settings.music_fanfares_randomized:
+            humanspoiler["Cosmetics"]["Fanfares"] = self.music_fanfare_data
+        if self.settings.music_events_randomized:
+            humanspoiler["Cosmetics"]["Event Themes"] = self.music_event_data
         self.json = json.dumps(humanspoiler, indent=4)
 
     def UpdateKasplats(self, kasplat_map):

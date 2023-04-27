@@ -10,7 +10,7 @@ from randomizer.Enums.Settings import DamageAmount, HelmSetting
 class CrownLocation:
     """Class to store information pertaining to a crown location."""
 
-    def __init__(self, *, map=0, name="", x=0, y=0, z=0, scale=1, region=0, logic=None, is_vanilla=False, is_rotating_room=False, default_index=0):
+    def __init__(self, *, map=0, name="", x=0, y=0, z=0, scale=1, region=0, logic=None, is_vanilla=False, is_rotating_room=False, default_index=0) -> None:
         """Initialize with given data."""
         self.map = map
         self.name = name
@@ -164,7 +164,7 @@ CrownLocations = {
             map=Maps.AngryAztec, name="Angry Aztec: On 5-Door Temple", x=2056, y=420, z=3648, scale=0.3, region=Regions.AngryAztecMain, logic=lambda l: (l.jetpack and l.diddy) or l.CanMoonkick()
         ),
         CrownLocation(map=Maps.AngryAztec, name="Angry Aztec: Near Snoop Tunnel Exterior Warp", x=3422, y=120, z=4514, scale=0.35, region=Regions.AngryAztecMain),
-        CrownLocation(map=Maps.AngryAztec, name="Angry Aztec: Near Vulture Cage", x=4013, y=226, z=4589, scale=0.18, region=Regions.AngryAztecMain, logic=lambda l: l.vines),
+        CrownLocation(map=Maps.AngryAztec, name="Angry Aztec: Near Vulture Cage", x=4013, y=226, z=4589, scale=0.18, region=Regions.AngryAztecMain, logic=lambda l: l.vines or (l.jetpack and l.diddy)),
         CrownLocation(map=Maps.AngryAztec, name="Angry Aztec: Under Vulture Cage", x=4102, y=120, z=4548, scale=0.4, region=Regions.AngryAztecMain),
         CrownLocation(map=Maps.AngryAztec, name="Angry Aztec: Near Gong Tower", x=4212, y=80, z=2959, scale=0.4, region=Regions.AngryAztecMain),
         CrownLocation(map=Maps.AngryAztec, name="Angry Aztec: Snoop Tunnel", x=2783, y=120, z=4817, scale=0.35, region=Regions.AztecDonkeyQuicksandCave),
@@ -335,7 +335,16 @@ CrownLocations = {
         CrownLocation(map=Maps.GloomyGalleon, name="Gloomy Galleon: On Rocketbarrel platform", x=1336, y=1660, z=4071, scale=0.2, region=Regions.LighthousePlatform),
         CrownLocation(map=Maps.GloomyGalleon, name="Gloomy Galleon: Blueprint Alcove", x=680, y=1564, z=3940, scale=0.55, region=Regions.LighthouseSurface),
         CrownLocation(map=Maps.GloomyGalleon, name="Gloomy Galleon: Behind Snide's", x=2071, y=1610, z=4823, scale=0.3, region=Regions.LighthouseSnideAlcove),
-        CrownLocation(map=Maps.GloomyGalleon, name="Gloomy Galleon: On Gold Tower", x=1660, y=2040, z=487, scale=0.25, region=Regions.TreasureRoomDiddyGoldTower),
+        CrownLocation(
+            map=Maps.GloomyGalleon,
+            name="Gloomy Galleon: On Gold Tower",
+            x=1660,
+            y=2040,
+            z=487,
+            scale=0.25,
+            region=Regions.TreasureRoom,
+            logic=lambda l: (l.balloon and l.islanky and Events.WaterSwitch in l.Events) or l.CanMoonkick(),
+        ),
         CrownLocation(map=Maps.GalleonSickBay, name="Gloomy Galleon - Seasick Ship: Left of Cannon", x=718, y=20, z=129, scale=0.35, region=Regions.SickBay),
         CrownLocation(map=Maps.GalleonSickBay, name="Gloomy Galleon - Seasick Ship: Right of Cannon", x=544, y=20, z=129, scale=0.35, region=Regions.SickBay),
         # CrownLocation(
@@ -522,7 +531,7 @@ CrownLocations = {
         CrownLocation(map=Maps.CavesLankyIgloo, name="Crystal Caves - Lanky 5DI: High Platform", x=273, y=123.3, z=245, scale=0.25, region=Regions.LankyIgloo, logic=lambda l: l.balloon and l.islanky),
         CrownLocation(map=Maps.CavesTinyIgloo, name="Crystal Caves - Tiny 5DI: Opposite Entrance", x=385, y=0, z=200, scale=0.4, region=Regions.TinyIgloo),
         CrownLocation(map=Maps.CavesLankyCabin, name="Crystal Caves - Lanky 1DC: Carpet", x=448, y=0, z=332, scale=0.45, region=Regions.LankyCabin),
-        CrownLocation(map=Maps.CavesChunkyCabin, name="Crystal Caves - Chunky 5DC: Back Left Corner", x=493, y=0, z=536, scale=0.35, region=Regions.ChunkyCabin),
+        # CrownLocation(map=Maps.CavesChunkyCabin, name="Crystal Caves - Chunky 5DC: Back Left Corner", x=493, y=0, z=536, scale=0.35, region=Regions.ChunkyCabin),
         CrownLocation(map=Maps.CavesDiddyUpperCabin, name="Crystal Caves - Diddy Upper 5DC: Right", x=106, y=0, z=353, scale=0.45, region=Regions.DiddyUpperCabin),
         CrownLocation(map=Maps.CavesDonkeyCabin, name="Crystal Caves - DK 5DC: Opposite Entrance", x=165, y=0, z=463, scale=0.35, region=Regions.DonkeyCabin),
         CrownLocation(map=Maps.CavesTinyCabin, name="Crystal Caves - Tiny Cabin: Interior", x=179, y=0, z=255, scale=0.35, region=Regions.TinyCabin),
@@ -594,7 +603,7 @@ CrownLocations = {
         CrownLocation(map=Maps.CastleMausoleum, name="Creepy Castle - Lanky Crypt: Lanky Tunnel", x=1186, y=160, z=130, scale=0.4, region=Regions.Mausoleum),
         CrownLocation(map=Maps.CastleUpperCave, name="Creepy Castle - Tunnel: Near Pit", x=704, y=200, z=852, scale=0.4, region=Regions.UpperCave),
         CrownLocation(map=Maps.CastleUpperCave, name="Creepy Castle - Tunnel: Near Candy's", x=1104, y=300, z=2241, scale=0.4, region=Regions.UpperCave),
-        CrownLocation(map=Maps.CastleLibrary, name="Creepy Castle - Library: Enemy Gauntlet Room", x=289, y=190, z=530, scale=0.5, region=Regions.Library),
+        # CrownLocation(map=Maps.CastleLibrary, name="Creepy Castle - Library: Enemy Gauntlet Room", x=289, y=190, z=530, scale=0.5, region=Regions.Library), # Disabled - if you do the crown first the enemies don't spawn, locking you in
         CrownLocation(
             map=Maps.CastleLibrary,
             name="Creepy Castle - Library: Flying Book Room",
