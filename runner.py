@@ -28,6 +28,7 @@ def generate(generate_settings, file_name, gen_spoiler):
 @app.route('/')
 def lambda_function():
     """CLI Entrypoint for generating seeds."""
+    start = time.time()
     presets = json.load(open("static/presets/preset_files.json"))
     default = json.load(open("static/presets/default.json"))
     found = False
@@ -64,6 +65,8 @@ def lambda_function():
         spoiler = generate(setting_data, 'test', True)
     except Exception as e:
         print(traceback.format_exc())
-    response = make_response(json.dumps(spoiler.json), 200)
+    end = time.time()
+    #response = make_response(json.dumps(spoiler.json), 200)
+    response = make_response(json.dumps({"time": end - start}), 200)
     response.mimetype = "text/plain"
     return response
