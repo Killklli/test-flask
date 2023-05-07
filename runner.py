@@ -56,10 +56,10 @@ def lambda_function():
             elif type(v) is int:
                 setting_data[k] = SettingsMap[k](v)
             else:
-				try:
-					setting_data[k] = SettingsMap[k][v]
-				except Exception:
-					pass
+                try:
+                    setting_data[k] = SettingsMap[k][v]
+                except Exception:
+                    pass
     try:
         spoiler = generate(setting_data, 'test', True)
     except Exception as e:
