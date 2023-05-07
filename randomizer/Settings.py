@@ -44,13 +44,12 @@ import randomizer.LogicFiles.FungiForest
 import randomizer.LogicFiles.CrystalCaves
 import randomizer.LogicFiles.CreepyCastle
 import randomizer.LogicFiles.Shops
-from typing import Any, Dict, List, Set, Union
 
 
 class Settings:
     """Class used to store settings for seed generation."""
 
-    def __init__(self, form_data: dict) -> None:
+    def __init__(self, form_data: dict):
         """Init all the settings using the form data to set the flags.
 
         Args:
@@ -128,7 +127,7 @@ class Settings:
         self.resolve_settings()
         self.update_valid_locations()
 
-    def apply_form_data(self, form_data: Dict[str, Any]) -> None:
+    def apply_form_data(self, form_data):
         """Convert and apply the provided form data to this class."""
 
         def get_enum_value(keyString, valueString):
@@ -159,7 +158,7 @@ class Settings:
                 # The value is a basic type, so assign it directly.
                 setattr(self, k, v)
 
-    def update_progression_totals(self) -> None:
+    def update_progression_totals(self):
         """Update the troff and blocker totals if we're randomly setting them."""
         # Assign weights to Troff n Scoff based on level order if not shuffling loading zones
         # Hard level shuffling makes these weights meaningless, as you'll be going into levels in a random order
@@ -219,7 +218,7 @@ class Settings:
         self.EntryGBs = [self.blocker_0, self.blocker_1, self.blocker_2, self.blocker_3, self.blocker_4, self.blocker_5, self.blocker_6, self.blocker_7]
         self.BossBananas = [self.troff_0, self.troff_1, self.troff_2, self.troff_3, self.troff_4, self.troff_5, self.troff_6]
 
-    def generate_main(self) -> None:
+    def generate_main(self):
         """Set Default items on main page."""
         self.seed = None
         self.download_patch_file = None
@@ -245,11 +244,11 @@ class Settings:
         # major_collectibles - includes blueprints, does not include lesser collectibles like cbs and coins
         self.free_trade_setting = FreeTradeSetting.none
 
-    def set_seed(self) -> None:
+    def set_seed(self):
         """Forcibly re-set the random seed to the seed set in the config."""
         random.seed(self.seed)
 
-    def generate_progression(self) -> None:
+    def generate_progression(self):
         """Set default items on progression page."""
         self.blocker_0 = None
         self.blocker_1 = None
@@ -271,7 +270,7 @@ class Settings:
         self.blocker_text = ""
         self.troff_text = ""
 
-    def generate_misc(self) -> None:
+    def generate_misc(self):
         """Set default items on misc page."""
         #  Settings which affect logic
         # crown_door_random: bool
@@ -351,7 +350,8 @@ class Settings:
 
         #  Music
         self.music_bgm_randomized = False
-        self.music_fanfares_randomized = False
+        self.music_majoritems_randomized = False
+        self.music_minoritems_randomized = False
         self.music_events_randomized = False
         self.random_music = False
 
@@ -385,6 +385,12 @@ class Settings:
         self.remove_water_oscillation = False
         self.head_balloons = False
         self.homebrew_header = False
+        self.camera_is_follow = False
+        self.sfx_volume = 100
+        self.music_volume = 100
+        self.camera_is_widescreen = False
+        self.camera_is_not_inverted = False
+        self.sound_type = SoundType.stereo
 
         #  Misc
         self.generate_spoilerlog = None
@@ -417,12 +423,14 @@ class Settings:
         self.kongs_for_progression = False
         self.wrinkly_hints = WrinklyHints.off
         self.fast_warps = False
-        self.dpad_display = False
+        self.dpad_display = DPadDisplays.off
         self.high_req = False
         self.fast_gbs = False
         self.auto_keys = False
         self.kko_phase_order = [0, 0, 0]
         self.toe_order = [0] * 10
+        self.mill_levers = [0] * 5
+        self.crypt_levers = [1, 4, 3]
         self.enemy_rando = False
         self.crown_enemy_rando = CrownEnemyRando.off
         self.enemy_speed_rando = False
@@ -477,13 +485,13 @@ class Settings:
         self.helmhurry_list_colored_bananas = 3
         self.helmhurry_list_ice_traps = -40
 
-    def shuffle_prices(self) -> None:
+    def shuffle_prices(self):
         """Price randomization. Reuseable if we need to reshuffle prices."""
         # Price Rando
         if self.random_prices != RandomPrices.vanilla:
             self.prices = RandomizePrices(self.random_prices)
 
-    def resolve_settings(self) -> None:
+    def resolve_settings(self):
         """Resolve settings which are not directly set through the UI."""
         # If we're using the vanilla door shuffle, turn both wrinkly and tns rando on
         if self.vanilla_door_rando:
@@ -626,6 +634,7 @@ class Settings:
 
         # Smaller shop setting blocks 2 Kong-specific locations from each shop randomly but is only valid if item rando is on and includes shops
         if self.smaller_shops and self.shuffle_items and Types.Shop in self.shuffled_location_types:
+            RemovedShopLocations = []
             # To evenly distribute the locations blocked, we can use the fact there are 20 shops to our advantage
             # These evenly distributed pairs will represent "locations to block" for each shop
             kongPairs = [
@@ -662,6 +671,7 @@ class Settings:
                     accessible_shops = [location_id for location_id in ShopLocationReference[level][vendor] if location_id not in inaccessible_shops]
                     for location_id in inaccessible_shops:
                         LocationList[location_id].inaccessible = True
+                        RemovedShopLocations.append(location_id)
                     for location_id in accessible_shops:
                         LocationList[location_id].inaccessible = False
 
@@ -749,6 +759,19 @@ class Settings:
             allocation = [1, 1, 1, 1, 2, 2, 3]  # 4 levels with lvl 1, 2 with lvl 2, 1 with lvl 3
             random.shuffle(allocation)
             self.switch_allocation = allocation.copy()
+
+        # Mill Levers
+        if not self.puzzle_rando and self.fast_gbs:
+            self.mill_levers = [2, 3, 1, 0, 0]
+        elif self.puzzle_rando:
+            mill_lever_cap = 3 if self.fast_gbs else 5
+            self.mill_levers = [0] * 5
+            for slot in range(mill_lever_cap):
+                self.mill_levers[slot] = random.randint(1, 3)
+
+        # Crypt Levers
+        if self.puzzle_rando:
+            self.crypt_levers = random.sample([x + 1 for x in range(6)], 3)
 
         # Set keys required for KRool
         KeyEvents = [
@@ -929,7 +952,7 @@ class Settings:
             # On Fast GBs, this location refers to the blast course, not the arcade
             LocationList[Locations.FactoryDonkeyDKArcade].name = "Factory Donkey Blast Course"
 
-    def isBadIceTrapLocation(self, location: Locations) -> bool:
+    def isBadIceTrapLocation(self, location: Locations):
         """Determine whether an ice trap is safe to house an ice trap outside of individual cases."""
         bad_fake_types = [Types.TrainingBarrel, Types.PreGivenMove]
         is_bad = location.type in bad_fake_types
@@ -937,7 +960,7 @@ class Settings:
             is_bad = location.type in bad_fake_types or (location.type == Types.Medal and location.level != Levels.HideoutHelm) or location.type == Types.Shockwave
         return is_bad
 
-    def update_valid_locations(self) -> None:
+    def update_valid_locations(self):
         """Calculate (or recalculate) valid locations for items by type."""
         self.valid_locations = {}
         self.valid_locations[Types.Kong] = self.kong_locations.copy()
@@ -1100,7 +1123,7 @@ class Settings:
                     [loc for loc in shuffledNonMoveLocations if loc not in banned_kong_locations]
                 )  # No items can be in Kong cages but Kongs can be in all other locations
 
-    def GetValidLocationsForItem(self, item_id: Items) -> Union[List[Locations], Set[Locations]]:
+    def GetValidLocationsForItem(self, item_id):
         """Return the valid locations the input item id can be placed in."""
         item_obj = ItemList[item_id]
         valid_locations = []
@@ -1111,7 +1134,7 @@ class Settings:
             valid_locations = self.valid_locations[item_obj.type]
         return valid_locations
 
-    def SelectKongLocations(self) -> List[Locations]:
+    def SelectKongLocations(self):
         """Select which random kong locations to use depending on number of starting kongs."""
         # First determine which kong cages will have a kong to free
         kongCageLocations = [Locations.DiddyKong, Locations.LankyKong, Locations.TinyKong, Locations.ChunkyKong]
@@ -1192,7 +1215,7 @@ class Settings:
         if self.__hash != hash:
             raise Exception("Error: Comparison failed, Hashes do not match.")
 
-    def verify_hash(self) -> bool:
+    def verify_hash(self):
         """Verify our hash files match our existing code."""
         try:
             if self.__hash == self.__get_hash():
@@ -1202,7 +1225,7 @@ class Settings:
         except Exception:
             return False
 
-    def __setattr__(self, name: str, value: Any) -> None:
+    def __setattr__(self, name, value):
         """Set an attributes value but only after verifying our hash."""
         self.verify_hash()
         super().__setattr__(name, value)

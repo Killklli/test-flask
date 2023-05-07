@@ -21,22 +21,19 @@ def generate(generate_settings, file_name, gen_spoiler):
     settings = Settings(generate_settings)
     spoiler = Spoiler(settings)
     Generate_Spoiler(spoiler)
-    if gen_spoiler:
-        with open(file_name + "-spoiler.json", "w") as outfile:
-            outfile.write(spoiler.json)
     encoded = codecs.encode(pickle.dumps(spoiler), "base64").decode()
-    with open(file_name + ".lanky", "w") as outfile:
-        outfile.write(encoded)
 
 
-def lambda_function(event, evt_context):
+def lambda_handler(event, evt_context):
     """CLI Entrypoint for generating seeds."""
     presets = json.load(open("static/presets/preset_files.json"))
     default = json.load(open("static/presets/default.json"))
     found = False
+    setting_data = {}
     for file in presets.get("progression"):
         with open("static/presets/" + file, "r") as preset_file:
             data = json.load(preset_file)
+            print(data)
             if "Season 1 Race Settings" == data.get("name"):
                 setting_data = default
                 for key in data:
@@ -61,11 +58,9 @@ def lambda_function(event, evt_context):
             else:
                 setting_data[k] = SettingsMap[k][v]
     try:
+        print(setting_data)
         generate(setting_data, 'test', True)
     except Exception as e:
-        with open("error.log", "w") as file_object:
-            file_object.write(repr(e))
-        with open("traceback.log", "w") as file_object:
-            file_object.write(str(traceback.format_exc()))
+        print(e)
         print(traceback.format_exc())
 

@@ -7,7 +7,6 @@ from itertools import groupby
 import js
 
 from randomizer.Enums.Settings import BananaportRando, LogicType, SettingsStringDataType, SettingsStringEnum, SettingsStringIntRangeMap, SettingsStringListTypeMap, SettingsStringTypeMap
-from typing import Any, Dict, Tuple
 
 letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 index_to_letter = {i: letters[i] for i in range(64)}
@@ -33,7 +32,7 @@ def bin_string_to_int(bin_str, bytesize):
         return int(bin_str, 2)
 
 
-def get_var_int_encode_details(settingEnum: SettingsStringEnum) -> Tuple[int, bool]:
+def get_var_int_encode_details(settingEnum):
     """Return key information needed to encode/decode a given var_int setting.
 
     Returns:
@@ -63,7 +62,7 @@ def encode_var_int(settingEnum, num):
     return int_to_bin_string(num, bit_len)
 
 
-def decode_var_int(settingEnum: SettingsStringEnum, bin_str: str) -> int:
+def decode_var_int(settingEnum, bin_str):
     """Convert a binary string to a variable-size integer."""
     bit_len, negatives_possible = get_var_int_encode_details(settingEnum)
     if negatives_possible:
@@ -149,7 +148,8 @@ def encrypt_settings_string_enum(dict_data: dict):
         "random_music",
         "music_bgm_randomized",
         "music_events_randomized",
-        "music_fanfares_randomized",
+        "music_majoritems_randomized",
+        "music_minoritems_randomized",
         "tiny_colors",
         "tiny_custom_color",
         "override_cosmetics",
@@ -159,6 +159,13 @@ def encrypt_settings_string_enum(dict_data: dict):
         "search",
         "holiday_setting",
         "homebrew_header",
+        "dpad_display",
+        "camera_is_follow",
+        "sfx_volume",
+        "music_volume",
+        "camera_is_widescreen",
+        "camera_is_not_inverted",
+        "sound_type",
     ]:
         if pop in dict_data:
             dict_data.pop(pop)
@@ -224,7 +231,7 @@ def encrypt_settings_string_enum(dict_data: dict):
     return letter_string
 
 
-def decrypt_settings_string_enum(encrypted_string: str) -> Dict[str, Any]:
+def decrypt_settings_string_enum(encrypted_string: str):
     """Take an enum-based encrypted string and return a dictionary.
 
     Args:

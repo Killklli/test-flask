@@ -7,14 +7,12 @@ from randomizer.Enums.Regions import Regions
 from randomizer.Enums.Transitions import Transitions
 from randomizer.Lists.LevelInfo import LevelInfoList
 from randomizer.LogicClasses import TransitionBack
-from randomizer.Enums.Levels import Levels
-from typing import Optional, Set
 
 
 class ShufflableExit:
     """Class that stores data about an exit to be shuffled."""
 
-    def __init__(self, name: str, region: Regions, back: TransitionBack, category: Optional[ExitCategories]=None, entryKongs: Optional[Set[Kongs]]=None, regionKongs: Optional[Set[Kongs]]=None, move: bool=False) -> None:
+    def __init__(self, name, region, back, category=None, entryKongs=None, regionKongs=None, move=False):
         """Initialize with given parameters."""
         if entryKongs is None:
             entryKongs = {Kongs.donkey, Kongs.diddy, Kongs.lanky, Kongs.tiny, Kongs.chunky}
@@ -36,8 +34,8 @@ class ShufflableExit:
 
 ShufflableExits = {
     # Level Exits
-    Transitions.IslesToJapes: ShufflableExit("Japes Lobby to Jungle Japes", Regions.JungleJapesLobby, TransitionBack(Regions.JungleJapesMain, "From Japes Lobby", "Jungle Japes from Japes Lobby", Transitions.JapesToIsles), ExitCategories.JapesLobby),
-    Transitions.JapesToIsles: ShufflableExit("Jungle Japes to Japes Lobby", Regions.JungleJapesMain, TransitionBack(Regions.JungleJapesLobby, "From Japes", "Japes Lobby from Jungle Japes", Transitions.IslesToJapes), ExitCategories.JapesExterior),
+    Transitions.IslesToJapes: ShufflableExit("Japes Lobby to Jungle Japes", Regions.JungleJapesLobby, TransitionBack(Regions.JungleJapesStart, "From Japes Lobby", "Jungle Japes from Japes Lobby", Transitions.JapesToIsles), ExitCategories.JapesLobby),
+    Transitions.JapesToIsles: ShufflableExit("Jungle Japes to Japes Lobby", Regions.JungleJapesStart, TransitionBack(Regions.JungleJapesLobby, "From Japes", "Japes Lobby from Jungle Japes", Transitions.IslesToJapes), ExitCategories.JapesExterior),
     Transitions.IslesToAztec: ShufflableExit("Aztec Lobby to Angry Aztec", Regions.AngryAztecLobby, TransitionBack(Regions.AngryAztecStart, "From Aztec Lobby", "Angry Aztec from Aztec Lobby", Transitions.AztecToIsles), ExitCategories.AztecLobby),
     Transitions.AztecToIsles: ShufflableExit("Angry Aztec to Aztec Lobby", Regions.AngryAztecStart, TransitionBack(Regions.AngryAztecLobby, "From Aztec", "Aztec Lobby from Angry Aztec", Transitions.IslesToAztec), ExitCategories.AztecExterior),
     Transitions.IslesToFactory: ShufflableExit("Factory Lobby to Frantic Factory", Regions.FranticFactoryLobby, TransitionBack(Regions.FranticFactoryStart, "From Factory Lobby", "Frantic Factory from Factory Lobby", Transitions.FactoryToIsles), ExitCategories.FactoryLobby),
@@ -80,11 +78,11 @@ ShufflableExits = {
     Transitions.JapesMineToMain: ShufflableExit("Jungle Japes Mountain to Main", Regions.Mine, TransitionBack(Regions.JungleJapesMain, "From Mountain", "Jungle Japes Main from Mountain", Transitions.JapesMainToMine)),
     Transitions.JapesMainToLankyCave: ShufflableExit("Jungle Japes Main to Painting Room", Regions.JungleJapesMain, TransitionBack(Regions.JapesLankyCave, "From Japes Main", "Jungle Japes Painting Room", Transitions.JapesLankyCaveToMain), ExitCategories.JapesExterior, entryKongs={Kongs.lanky}, regionKongs={Kongs.lanky}, move=True),
     Transitions.JapesLankyCaveToMain: ShufflableExit("Jungle Japes Painting Room to Main", Regions.JapesLankyCave, TransitionBack(Regions.JungleJapesMain, "From Painting Room", "Jungle Japes Main from Painting Room", Transitions.JapesMainToLankyCave)),
-    Transitions.JapesMainToCatacomb: ShufflableExit("Jungle Japes Main to Underground", Regions.JungleJapesMain, TransitionBack(Regions.JapesCatacomb, "From Japes Main", "Jungle Japes Underground", Transitions.JapesCatacombToMain), ExitCategories.JapesExterior, entryKongs={Kongs.chunky}, regionKongs={Kongs.chunky}),
-    Transitions.JapesCatacombToMain: ShufflableExit("Jungle Japes Underground to Main", Regions.JapesCatacomb, TransitionBack(Regions.JungleJapesMain, "From Underground", "Jungle Japes Main from Underground", Transitions.JapesMainToCatacomb)),
+    Transitions.JapesMainToCatacomb: ShufflableExit("Jungle Japes Main to Underground", Regions.JungleJapesStart, TransitionBack(Regions.JapesCatacomb, "From Japes Main", "Jungle Japes Underground", Transitions.JapesCatacombToMain), ExitCategories.JapesExterior, entryKongs={Kongs.chunky}, regionKongs={Kongs.chunky}),
+    Transitions.JapesCatacombToMain: ShufflableExit("Jungle Japes Underground to Main", Regions.JapesCatacomb, TransitionBack(Regions.JungleJapesStart, "From Underground", "Jungle Japes Main from Underground", Transitions.JapesMainToCatacomb)),
     Transitions.JapesMainToTinyHive: ShufflableExit("Jungle Japes Main to Beehive", Regions.JapesBeyondFeatherGate, TransitionBack(Regions.TinyHive, "From Japes Main", "Jungle Japes Beehive", Transitions.JapesTinyHiveToMain), ExitCategories.JapesExterior, entryKongs={Kongs.tiny}, regionKongs={Kongs.tiny}, move=True),
     Transitions.JapesTinyHiveToMain: ShufflableExit("Jungle Japes Beehive to Main", Regions.TinyHive, TransitionBack(Regions.JapesBeyondFeatherGate, "From Beehive", "Jungle Japes Main from Beehive", Transitions.JapesMainToTinyHive)),
-    # Transitions.JapesMainToBBlast: ShufflableExit("Jungle Japes Main to Baboon Blast", Regions.JungleJapesMain, TransitionBack(Regions.JapesBaboonBlast, "From Japes Main", "Jungle Japes Baboon Blast"), ExitCategories.JapesExterior, entryKongs={Kongs.donkey}, regionKongs={Kongs.donkey}, move=True),
+    # Transitions.JapesMainToBBlast: ShufflableExit("Jungle Japes Main to Baboon Blast", Regions.JungleJapesStart, TransitionBack(Regions.JapesBaboonBlast, "From Japes Main", "Jungle Japes Baboon Blast"), ExitCategories.JapesExterior, entryKongs={Kongs.donkey}, regionKongs={Kongs.donkey}, move=True),
     Transitions.JapesMineToCarts: ShufflableExit("Jungle Japes Mountain to Minecart", Regions.Mine, TransitionBack(Regions.JapesMinecarts, "From Mountain", "Jungle Japes Minecart"), entryKongs={Kongs.diddy}, regionKongs={Kongs.diddy}),
     Transitions.JapesCartsToMain: ShufflableExit("Jungle Japes Minecart to Main", Regions.JapesMinecarts, TransitionBack(Regions.JungleJapesMain, "From Minecart", "Jungle Japes Main from Minecart")),
 
@@ -258,7 +256,7 @@ ShufflableExits = {
 }
 
 
-def GetShuffledLevelIndex(level: Levels) -> Levels:
+def GetShuffledLevelIndex(level):
     """Get index of where the given level fits in the level order. Ex: If Caves is the 1st level, passing 5 will return 0."""
     lobbyExit = ShufflableExits[LevelInfoList[level].TransitionsFrom].shuffledId
     if lobbyExit is not None:
@@ -268,7 +266,7 @@ def GetShuffledLevelIndex(level: Levels) -> Levels:
     return levelIndex
 
 
-def GetLevelShuffledToIndex(levelIndex: int) -> Levels:
+def GetLevelShuffledToIndex(levelIndex):
     """Get level located at the given level index. Ex: If Caves is the 1st level, passing 0 will return 5."""
     lobbyEntrance = ShufflableExits[LevelInfoList[levelIndex].TransitionTo].shuffledId
     if lobbyEntrance is not None:

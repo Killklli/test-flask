@@ -10,7 +10,7 @@ from randomizer.Lists.MapsAndExits import Maps
 class DirtPatchData:
     """Information about the dirt patch location."""
 
-    def __init__(self, *, name="", level=0, map_id=0, vanilla=False, x=0, y=0, z=0, scale=1, rotation=0, group=0, logicregion="", logic=0, is_fungi_hidden_patch=False) -> None:
+    def __init__(self, *, name="", level=0, map_id=0, vanilla=False, x=0, y=0, z=0, scale=1, rotation=0, group=0, logicregion="", logic=0, is_fungi_hidden_patch=False):
         """Initialize with given parameters."""
         self.name = name
         self.level_name = level
@@ -27,7 +27,7 @@ class DirtPatchData:
         self.logic = logic
         self.is_fungi_hidden_patch = is_fungi_hidden_patch
 
-    def setPatch(self, used: bool) -> None:
+    def setPatch(self, used):
         """Set patch's state regarding rando."""
         self.selected = used
 
@@ -534,7 +534,7 @@ DirtPatchLocations = [
         z=1114.0,
         rotation=3784,
         group=2,
-        logicregion=Regions.JungleJapesMain,
+        logicregion=Regions.JungleJapesStart,
         logic=lambda l: l.shockwave,
     ),
     DirtPatchData(
@@ -546,7 +546,7 @@ DirtPatchLocations = [
         z=797.0,
         rotation=1171,
         group=3,
-        logicregion=Regions.JungleJapesMain,
+        logicregion=Regions.JungleJapesStart,
         logic=lambda l: l.shockwave,
     ),
     DirtPatchData(
@@ -558,7 +558,7 @@ DirtPatchLocations = [
         z=824.0,
         rotation=796,
         group=3,
-        logicregion=Regions.JungleJapesMain,
+        logicregion=Regions.JungleJapesStart,
         logic=lambda l: l.shockwave,
     ),
     DirtPatchData(
@@ -570,7 +570,7 @@ DirtPatchLocations = [
         z=205.0,
         rotation=3572,
         group=3,
-        logicregion=Regions.JungleJapesMain,
+        logicregion=Regions.JungleJapesStart,
         logic=lambda l: l.shockwave,
     ),
     DirtPatchData(

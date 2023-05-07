@@ -2,13 +2,12 @@
 from randomizer.Enums.Kongs import Kongs
 from randomizer.Enums.Levels import Levels
 from randomizer.Enums.WrinklyKong import WrinklyLocation
-from typing import Any, List, Union
 
 
 class HintLocation:
     """Hint object for Wrinkly hint data locations."""
 
-    def __init__(self, name: str, kong: Kongs, location: WrinklyLocation, hint: str, level: Levels, banned_keywords: List[Union[Any, str]]=[]) -> None:
+    def __init__(self, name, kong: Kongs, location: WrinklyLocation, hint, level: Levels, banned_keywords=[]):
         """Create wrinkly hint object.
 
         Args:
@@ -68,7 +67,7 @@ hints = [
 ]
 
 
-def ClearHintMessages() -> None:
+def ClearHintMessages():
     """Reset the hint message for all hints."""
     for hint in hints:
         if hint.name != "First Time Talk":

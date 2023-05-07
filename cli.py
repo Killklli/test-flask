@@ -4,7 +4,6 @@ import codecs
 import json
 import pickle
 import random
-import time
 import os
 import sys
 import traceback
@@ -31,13 +30,12 @@ def generate(generate_settings, file_name, gen_spoiler):
 
 def main():
     """CLI Entrypoint for generating seeds."""
-    now = time.time()
     parser = argparse.ArgumentParser()
     parser.add_argument("--settings_string", help="The settings string to use to generate a seed", required=False)
     parser.add_argument("--preset", help="Preset to use", required=False)
     parser.add_argument("--output", help="File to name patch file", required=True)
     parser.add_argument("--seed", help="Seed ID to use", required=False)
-    parser.add_argument("--generate_spoiler", help="Dumps the Spoiler log to a file along with the patch file.", required=False)
+    parser.add_argument("--generate_spoiler", help="Dumps the Spoiler log to a file along with the patch file.", required=False, action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
     if not os.environ.get("POST_BODY"):
         if args.settings_string is not None:
@@ -102,7 +100,6 @@ def main():
             webhook.add_embed(embed)
             webhook.execute()
         sys.exit(1)
-    print("Generated in " + str(time.time() - now) + " seconds")
 
 
 if __name__ == "__main__":

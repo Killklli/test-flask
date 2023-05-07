@@ -4,14 +4,13 @@ from randomizer.Enums.Events import Events
 from randomizer.Enums.Kongs import Kongs
 from randomizer.Enums.Levels import Levels
 from randomizer.Enums.Regions import Regions
-from randomizer.Enums.Settings import DamageAmount
 from randomizer.Lists.MapsAndExits import Maps
 
 
 class KasplatLocation:
     """Class which stores name and logic for a kasplat location."""
 
-    def __init__(self, *, name="No Location", map_id=0, kong_lst=[], coords=[0, 0, 0], xmin=0, xmax=0, zmin=0, zmax=0, region, additional_logic=None, vanilla=False) -> None:
+    def __init__(self, *, name="No Location", map_id=0, kong_lst=[], coords=[0, 0, 0], xmin=0, xmax=0, zmin=0, zmax=0, region, additional_logic=None, vanilla=False):
         """Initialize with given parameters."""
         self.name = name
         self.map = map_id
@@ -128,7 +127,7 @@ KasplatLocationList = {
             xmax=1100,
             zmin=460,
             zmax=800,
-            region=Regions.JungleJapesMain,
+            region=Regions.JungleJapesStart,
         ),
         KasplatLocation(
             name="Japes Kasplat: Diddy Cave",
@@ -150,7 +149,7 @@ KasplatLocationList = {
             xmax=1650,
             zmin=1650,
             zmax=1800,
-            region=Regions.JungleJapesMain,
+            region=Regions.JungleJapesStart,
             additional_logic=lambda l: l.swim and (l.oranges or l.HasGun(Kongs.any) or l.HasInstrument(Kongs.any)),
         ),
         KasplatLocation(

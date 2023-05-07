@@ -1,6 +1,5 @@
 """Kong enum."""
 from enum import IntEnum, auto
-from typing import List
 
 
 class Kongs(IntEnum):
@@ -14,6 +13,6 @@ class Kongs(IntEnum):
     any = auto()
 
 
-def GetKongs() -> List[Kongs]:
+def GetKongs():
     """Return list of kongs without any."""
     return [Kongs.donkey, Kongs.diddy, Kongs.lanky, Kongs.tiny, Kongs.chunky]

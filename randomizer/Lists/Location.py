@@ -9,13 +9,12 @@ from randomizer.Enums.MoveTypes import MoveTypes
 from randomizer.Enums.Types import Types
 from randomizer.Lists.MapsAndExits import Maps
 from randomizer.Enums.VendorType import VendorType
-from typing import Any, Optional, Union
 
 
 class MapIDCombo:
     """A combination of a map and an associated item ID. If id == -1 and map == 0, has no model 2 item, ignore those."""
 
-    def __init__(self, map: Optional[Union[int, Maps]]=None, id: Optional[int]=None, flag: Optional[int]=None, kong: Kongs=Kongs.any) -> None:
+    def __init__(self, map=None, id=None, flag=None, kong=Kongs.any):
         """Initialize with given parameters."""
         self.map = map
         self.id = id
@@ -26,7 +25,7 @@ class MapIDCombo:
 class Location:
     """A shufflable location at which a random item can be placed."""
 
-    def __init__(self, level: Levels, name: str, default: Items, location_type: Types, kong: Kongs=Kongs.any, data: Optional[Any]=None, logically_relevant: bool=False) -> None:
+    def __init__(self, level, name, default, location_type, kong=Kongs.any, data=None, logically_relevant=False):
         """Initialize with given parameters."""
         if data is None:
             data = []
@@ -80,7 +79,7 @@ class Location:
         if self.default_mapid_data is not None and len(self.default_mapid_data) > 0 and type(self.default_mapid_data[0]) is MapIDCombo and self.default_mapid_data[0].id == -1 and self.type != Types.Kong:
             self.is_reward = True
 
-    def PlaceItem(self, item: Items) -> None:
+    def PlaceItem(self, item):
         """Place item at this location."""
         self.item = item
         # If we're placing a real move here, lock out mutually exclusive shop locations
@@ -90,27 +89,27 @@ class Location:
                     continue
                 # If this is a shared spot, lock out kong-specific locations in this shop
                 if self.kong == Kongs.any and LocationList[location].kong != Kongs.any:
-                    LocationList[location].PlaceItem(Items.NoItem)
+                    LocationList[location].inaccessible = True
                 # If this is a kong-specific spot, lock out the shared location in this shop
                 if self.kong != Kongs.any and LocationList[location].kong == Kongs.any:
-                    LocationList[location].PlaceItem(Items.NoItem)
+                    LocationList[location].inaccessible = True
                     break  # There's only one shared spot to block
 
-    def PlaceConstantItem(self, item: Items) -> None:
+    def PlaceConstantItem(self, item):
         """Place item at this location, and set constant so it's ignored in the spoiler."""
         self.PlaceItem(item)
         self.constant = True
 
-    def SetDelayedItem(self, item: Items) -> None:
+    def SetDelayedItem(self, item):
         """Set an item to be added back later."""
         self.delayedItem = item
 
-    def PlaceDelayedItem(self) -> None:
+    def PlaceDelayedItem(self):
         """Place the delayed item at this location."""
         self.PlaceItem(self.delayedItem)
         self.delayedItem = None
 
-    def PlaceDefaultItem(self) -> None:
+    def PlaceDefaultItem(self):
         """Place whatever this location's default (vanilla) item is at it."""
         self.PlaceItem(self.default)
         self.constant = True
@@ -124,13 +123,14 @@ class Location:
             for location_id in ShopLocationReference[self.level][self.vendor]:
                 if location_id in RemovedShopLocations:
                     continue
-                if LocationList[location_id].kong == Kongs.any and LocationList[location_id].item == Items.NoItem:
+                if LocationList[location_id].kong == Kongs.any and LocationList[location_id].inaccessible:
+                    # If there are no other items remaining in this shop, then we can unlock the shared location
                     itemsInThisShop = len([location for location in ShopLocationReference[self.level][self.vendor] if location not in RemovedShopLocations and LocationList[location].item not in (None, Items.NoItem)])
                     if itemsInThisShop == 0:
-                        location_id.item = None
-                # Items.NoItem are only placed when locking out locations. If any exist, they're because this location caused them to be placed here
-                elif LocationList[location_id].item == Items.NoItem:
-                    LocationList[location_id].item = None
+                        LocationList[location_id].inaccessible = False
+                # Locations are only inaccessible due to lockouts. If any exist, they're because this location caused them to be locked out.
+                elif LocationList[location_id].inaccessible:
+                    LocationList[location_id].inaccessible = False
 
 
 LocationList = {

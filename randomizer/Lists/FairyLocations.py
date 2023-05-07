@@ -9,7 +9,7 @@ from randomizer.Enums.Events import Events
 class Fence:
     """Stores information about a fence."""
 
-    def __init__(self, min_x: int, min_z: int, max_x: int, max_z: int) -> None:
+    def __init__(self, min_x: int, min_z: int, max_x: int, max_z: int):
         """Initialize with given data."""
         self.min_x = min_x
         self.min_z = min_z
@@ -35,7 +35,7 @@ class FairyData:
         spawn_xyz: list = None,
         natural_index: int = -1,
         is_5ds_fairy: bool = False,
-    ) -> None:
+    ):
         """Initialize with given data."""
         self.name = name
         self.map = map
@@ -117,7 +117,7 @@ fairy_locations = {
         FairyData(
             name="Above Underground Entrance",
             map=Maps.JungleJapes,
-            region=Regions.JungleJapesMain,
+            region=Regions.JungleJapesStart,
             fence=Fence(2223, 1255, 2524, 1322),
             spawn_y=370,
         ),
