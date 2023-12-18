@@ -6,6 +6,7 @@ on:
 jobs:
   version-bump:
     runs-on: ubuntu-latest
+    if: ${{ github.actor != 'Bump2Version' }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
