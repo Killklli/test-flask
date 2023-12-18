@@ -6,7 +6,7 @@ on:
 jobs:
   version-bump:
     runs-on: ubuntu-latest
-    if: ${{ github.actor != 'Bump2Version' }}
+    if: ${{ !contains(github.actor, '[bot]') }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
